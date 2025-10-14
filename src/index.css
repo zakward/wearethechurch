@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@theme {
+  --color-primaryBlue: #3B82F6;
+  --color-primaryYellow: #FBBF24;
+  --color-primaryGreen: #10B981;
+  --color-secondaryPurple: #A78BFA;
+  --color-secondaryPink: #FB7185;
+  --color-secondaryOrange: #FB923C;
+  --color-bgLightBlue: #F0F9FF;
+  --color-bgLightYellow: #FEF3C7;
+  --color-bgLightGreen: #F0FDF4;
+  --color-textGray: #374151;
+
+  --font-family-friendly: "Fredoka", sans-serif;
+  --border-radius-3xl: 1.5rem;
+  --border-radius-2xl: 1rem;
+  --shadow-xl: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --transition-duration-300: 300ms;
+  --rotate-1: 1deg;
+  --rotate--1: -1deg;
+  --rotate-2: 2deg;
+}
+
+body {
+  font-family: var(--font-family-friendly);
+  background: var(--color-bgLightBlue);
+  color: var(--color-textGray);
+}
