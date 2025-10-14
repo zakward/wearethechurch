@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useContext } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext, AuthProvider } from './AuthContext.jsx';
@@ -10,6 +9,7 @@ import Home from './pages/Home.jsx';
 import BibleBooks from './pages/BibleBooks.jsx';
 import BibleReader from './pages/BibleReader.jsx';
 import Persons from './pages/Persons.jsx';
+import PersonDetail from './pages/PersonDetail.jsx';
 import Map from './pages/Map.jsx';
 import Nav from './components/Nav.jsx';
 
@@ -33,6 +33,7 @@ function App() {
                 <Route path="/bible" element={<ProtectedRoute><BibleBooks /></ProtectedRoute>} />
                 <Route path="/bible/:book/:chapter?" element={<ProtectedRoute><BibleReader /></ProtectedRoute>} />
                 <Route path="/persons" element={<ProtectedRoute><Persons /></ProtectedRoute>} />
+                <Route path="/persons/:name" element={<ProtectedRoute><PersonDetail /></ProtectedRoute>} />
                 <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
               </Routes>
             </div>

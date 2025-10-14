@@ -58,14 +58,7 @@ const Login = () => {
 
       <p className="text-center text-base md:text-lg">New here? <Link to="/signup" className="text-primaryBlue hover:underline font-bold">Sign up</Link></p>
 
-      {/* Image */}
-      <div className="text-center">
-        <img
-          src="https://placehold.co/400x300/png?text=Cartoon+Login+Fun&font=Fredoka"
-          alt="Cartoon login illustration"
-          className="rounded-3xl shadow-xl mx-auto max-w-full border-4 border-white rotate-1 hover:rotate-0 transition-transform duration-300"
-        />
-      </div>
+    
     </div>
   );
 };

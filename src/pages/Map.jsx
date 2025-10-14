@@ -27,8 +27,7 @@ const Map = () => {
         </Marker>
       </MapContainer>
       <p className="mt-4 text-center text-primary">Interactive map of Israel areas. Tabs change timelines (add real boundaries via GeoJSON later).</p>
-      {/* Cartoon image */}
-      <img src="https://placehold.co/600x300/png?text=Cartoon+Ancient+Map&font=comic" alt="Map cartoon" className="mt-8 rounded-cartoon mx-auto max-w-full sm:max-w-md lg:max-w-lg" />
+      
     </div>
   );
 };

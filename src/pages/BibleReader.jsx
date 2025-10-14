@@ -49,30 +49,39 @@ const BibleReader = () => {
   }
 
   return (
-    <div className={`p-8 rounded-3xl shadow-xl border-4 border-white bg-white dark:bg-gray-800 text-textGray dark:text-gray-200 ${sizeClass} ${familyClass}`}>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">{book} {chapter}</h1>
-        {/* Theme toggles */}
-        <div className="flex space-x-4">
-          <select value={mode} onChange={(e) => setMode(e.target.value)} className="p-2 rounded bg-bgLightBlue dark:bg-gray-700">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="sepia">Sepia</option>
-            <option value="high-contrast">High Contrast</option>
-          </select>
-          <select value={fontSize} onChange={(e) => setFontSize(e.target.value)} className="p-2 rounded bg-bgLightBlue dark:bg-gray-700">
-            <option value="base">Base (16px)</option>
-            <option value="lg">Large (18px)</option>
-            <option value="xl">X-Large (20px)</option>
-          </select>
-          <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="p-2 rounded bg-bgLightBlue dark:bg-gray-700">
-            <option value="friendly">Friendly (Fredoka)</option>
-            <option value="serif">Serif (Times)</option>
-            <option value="sans">Sans-serif (Arial)</option>
-          </select>
+    <div className={`p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-white bg-white dark:bg-gray-800 text-textGray dark:text-gray-200 ${sizeClass} ${familyClass}`}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+        {/* Theme toggles with labels */}
+        <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col">
+            <label htmlFor="mode" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Mode</label>
+            <select id="mode" value={mode} onChange={(e) => setMode(e.target.value)} className="p-2 rounded bg-bgLightBlue dark:bg-gray-700 dark:text-gray-300">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="sepia">Sepia</option>
+              <option value="high-contrast">High Contrast</option>
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="fontSize" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Font Size</label>
+            <select id="fontSize" value={fontSize} onChange={(e) => setFontSize(e.target.value)} className="p-2 rounded bg-bgLightBlue dark:bg-gray-700 dark:text-gray-300">
+              <option value="base">Base (16px)</option>
+              <option value="lg">Large (18px)</option>
+              <option value="xl">X-Large (20px)</option>
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="fontFamily" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Font Style</label>
+            <select id="fontFamily" value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="p-2 rounded bg-bgLightBlue dark:bg-gray-700 dark:text-gray-300">
+              <option value="friendly">Friendly (Fredoka)</option>
+              <option value="serif">Serif (Times)</option>
+              <option value="sans">Sans-serif (Arial)</option>
+            </select>
+          </div>
         </div>
+        <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">{book} {chapter}</h1>
       </div>
-      <div className={`space-y-4 p-4 rounded-md ${modeClass}`}>
+      <div className={`space-y-2 sm:space-y-4 p-2 sm:p-4 rounded-md ${modeClass}`}>
         {verses.map((v) => (
           <p key={v} id={`verse-${v}`}>
             <sup className="font-bold mr-2">{v}</sup>{chapterData[v]}

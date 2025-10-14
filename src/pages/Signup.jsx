@@ -65,20 +65,13 @@ const Signup = () => {
           type="submit"
           className="w-full bg-gradient-to-r from-secondaryOrange to-secondaryPink hover:from-secondaryPink hover:to-secondaryOrange text-textGray font-bold py-3 px-6 md:py-4 md:px-8 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:-rotate-2 border-4 border-white text-base md:text-lg lg:text-xl"
         >
-          Sign Up 🌈
+          Sign Up 🚀
         </button>
       </form>
 
       <p className="text-center text-base md:text-lg">Already joined? <Link to="/login" className="text-secondaryPurple hover:underline font-bold">Log in</Link></p>
 
-      {/* Image */}
-      <div className="text-center">
-        <img
-          src="https://placehold.co/400x300/png?text=Cartoon+Signup+Adventure&font=Fredoka"
-          alt="Cartoon signup illustration"
-          className="rounded-3xl shadow-xl mx-auto max-w-full border-4 border-white -rotate-1 hover:rotate-0 transition-transform duration-300"
-        />
-      </div>
+     
     </div>
   );
 };

@@ -1,42 +1,132 @@
-import React from 'react';
-
-const persons = [
-  {
-    name: 'Jesus',
-    family: 'Son of Mary and Joseph (adoptive), descendant of David.',
-    references: 'Throughout New Testament, e.g., Matthew 1-28.',
-    importance: 'Central figure of Christianity, Messiah, teacher, healer.',
-    death: 'Crucified around 30-33 AD, resurrected.'
-  },
-  {
-    name: 'Peter (Simon Peter)',
-    family: 'Brother of Andrew, fisherman.',
-    references: 'Gospels, Acts, 1&2 Peter.',
-    importance: 'Leader of apostles, denied Jesus thrice, key in early church.',
-    death: 'Crucified upside down in Rome ~64 AD.'
-  },
-  // Add more apostles like John, James, etc., similarly
-  { name: 'John', family: 'Brother of James, son of Zebedee.', references: 'Gospels, Acts, Revelation.', importance: 'Beloved disciple, wrote Gospel.', death: 'Exiled, natural death ~100 AD.' },
-  // ... (add the rest: Andrew, James, Philip, Bartholomew, Matthew, Thomas, James (son of Alphaeus), Thaddaeus, Simon the Zealot, Judas Iscariot, Matthias)
-];
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { peopleData } from '../data/BibleTranslations/peopleData.jsx';
 
 const Persons = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState('alphabetical');
+  const [filterOption, setFilterOption] = useState('all');
+
+  // Combine all people for processing
+  const allPeople = [...peopleData.oldTestament, ...peopleData.newTestament];
+
+  // Filter people based on search and filter option
+  const filteredPeople = allPeople.filter(person => {
+    if (filterOption === 'old') return peopleData.oldTestament.includes(person);
+    if (filterOption === 'new') return peopleData.newTestament.includes(person);
+    if (filterOption === 'apostles') return person.isApostle;
+    return true; // 'all'
+  }).filter(person =>
+    person.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Sort people
+  const sortedPeople = filteredPeople.sort((a, b) => {
+    if (sortOption === 'alphabetical') {
+      return a.name.localeCompare(b.name);
+    } else {
+      return a.chronology - b.chronology; // Chronological
+    }
+  });
+
   return (
-    <div>
-      <h1 className="text-4xl font-bold mb-6 text-secondary text-center">Jesus & Apostles</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {persons.map((person, index) => (
-          <div key={index} className="bg-white p-6 rounded-cartoon shadow-cartoon">
-            <h2 className="text-2xl font-bold mb-2 text-funPink">{person.name}</h2>
-            <p><strong>Family:</strong> {person.family}</p>
-            <p><strong>References:</strong> {person.references}</p>
-            <p><strong>Importance:</strong> {person.importance}</p>
-            <p><strong>Death:</strong> {person.death}</p>
-          </div>
-        ))}
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">Significant People in the Bible</h1>
+      
+      {/* Search and Filter/Sort Controls */}
+      <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col w-full sm:w-1/3">
+          <label htmlFor="search" className="text-sm font-bold text-primaryBlue mb-2">Search by Name</label>
+          <input
+            id="search"
+            type="text"
+            placeholder="Enter name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-3 bg-white border-2 border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple hover:scale-105 transition-all duration-300 shadow-sm"
+          />
+        </div>
+        <div className="flex flex-col w-full sm:w-1/4">
+          <label htmlFor="filter" className="text-sm font-bold text-primaryBlue mb-2">Filter</label>
+          <select
+            id="filter"
+            value={filterOption}
+            onChange={(e) => setFilterOption(e.target.value)}
+            className="w-full p-3 bg-white border-2 border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple hover:scale-105 transition-all duration-300 shadow-sm appearance-none"
+            style={{
+              backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23374151"><path d="M10 14l-6-6h12l-6 6z"/></svg>')`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 0.75rem center',
+              backgroundSize: '1rem'
+            }}
+          >
+            <option value="all">All</option>
+            <option value="old">Old Testament</option>
+            <option value="new">New Testament</option>
+            <option value="apostles">Apostles</option>
+          </select>
+        </div>
+        <div className="flex flex-col w-full sm:w-1/4">
+          <label htmlFor="sort" className="text-sm font-bold text-primaryBlue mb-2">Sort By</label>
+          <select
+            id="sort"
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="w-full p-3 bg-white border-2 border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple hover:scale-105 transition-all duration-300 shadow-sm appearance-none"
+            style={{
+              backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23374151"><path d="M10 14l-6-6h12l-6 6z"/></svg>')`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 0.75rem center',
+              backgroundSize: '1rem'
+            }}
+          >
+            <option value="alphabetical">Alphabetical</option>
+            <option value="chronological">Chronological</option>
+          </select>
+        </div>
       </div>
-      {/* Cartoon image */}
-      <img src="https://placehold.co/600x300/png?text=Cartoon+Jesus+and+Apostles&font=comic" alt="Persons cartoon" className="mt-8 rounded-cartoon mx-auto max-w-full sm:max-w-md lg:max-w-lg" />
+
+      {/* People List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h2 className="text-3xl font-bold mb-4 text-primaryBlue">Old Testament</h2>
+          <ul className="space-y-2">
+            {sortedPeople
+              .filter(person => peopleData.oldTestament.includes(person))
+              .map((person, index) => (
+                <li key={index}>
+                  <Link
+                    to={`/persons/${person.name.toLowerCase()}`}
+                    className="block bg-white p-3 rounded-2xl shadow-xl hover:bg-accent hover:text-white transition-all duration-300 border-2 border-secondaryPurple"
+                  >
+                    <h3 className="text-xl font-bold text-funPink hover:text-white">{person.name}</h3>
+                    <p className="text-textGray hover:text-white">{person.title}</p>
+                  </Link>
+                </li>
+              ))}
+          </ul>
+        </div>
+        <div>
+          <h2 className="text-3xl font-bold mb-4 text-primaryBlue">New Testament</h2>
+          <ul className="space-y-2">
+            {sortedPeople
+              .filter(person => peopleData.newTestament.includes(person))
+              .map((person, index) => (
+                <li key={index}>
+                  <Link
+                    to={`/persons/${person.name.toLowerCase()}`}
+                    className="block bg-white p-3 rounded-2xl shadow-xl hover:bg-accent hover:text-white transition-all duration-300 border-2 border-secondaryPurple"
+                  >
+                    <h3 className="text-xl font-bold text-funPink hover:text-white">{person.name}</h3>
+                    <p className="text-textGray hover:text-white">{person.title}</p>
+                  </Link>
+                </li>
+              ))}
+          </ul>
+        </div>
+      </div>
+
+    
     </div>
   );
 };

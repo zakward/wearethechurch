@@ -57,8 +57,33 @@ const Home = () => {
         </Link>
       </section>
 
+      {/* Featured Verse Section */}
+      <section className="text-center mb-12 bg-bgLightBlue p-8 rounded-3xl shadow-xl border-4 border-white">
+        <h2 className="text-3xl font-bold mb-6 text-primaryBlue">Featured Verse of the Day</h2>
+        <blockquote className="text-xl italic text-textGray max-w-2xl mx-auto">
+          "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life." — John 3:16 (NIV)
+        </blockquote>
+        <p className="mt-4 text-lg text-secondaryPink">Reflect on this and add your thoughts!</p>
+      </section>
       {/* Dashboard Grid */}
       <section className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
+        {/* Quick Links Card */}
+        <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white md:col-span-2 lg:col-span-1">
+          <h2 className="text-2xl font-bold mb-4 text-primaryBlue flex items-center">
+            <span className="mr-2 text-3xl">🔗</span> Quick Explore
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Link to="/bible" className="bg-primaryBlue text-white p-4 rounded-2xl hover:bg-primaryGreen transition-all duration-300 text-center hover:scale-105">
+              Bible Books
+            </Link>
+            <Link to="/persons" className="bg-primaryYellow text-textGray p-4 rounded-2xl hover:bg-secondaryOrange transition-all duration-300 text-center hover:scale-105">
+              Significant People
+            </Link>
+            <Link to="/map" className="bg-secondaryPink text-white p-4 rounded-2xl hover:bg-secondaryPurple transition-all duration-300 text-center hover:scale-105 sm:col-span-2 md:col-span-1">
+              Historical Map
+            </Link>
+          </div>
+        </div>
         {/* Progress Card - Dynamic */}
         <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
           <h2 className="text-2xl font-bold mb-4 text-primaryBlue flex items-center">
@@ -90,23 +115,6 @@ const Home = () => {
           </button>
         </div>
 
-        {/* Quick Links Card */}
-        <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white md:col-span-2 lg:col-span-1">
-          <h2 className="text-2xl font-bold mb-4 text-primaryBlue flex items-center">
-            <span className="mr-2 text-3xl">🔗</span> Quick Explore
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Link to="/bible" className="bg-primaryBlue text-white p-4 rounded-2xl hover:bg-primaryGreen transition-all duration-300 text-center hover:scale-105">
-              Bible Books
-            </Link>
-            <Link to="/persons" className="bg-primaryYellow text-textGray p-4 rounded-2xl hover:bg-secondaryOrange transition-all duration-300 text-center hover:scale-105">
-              Jesus & Apostles
-            </Link>
-            <Link to="/map" className="bg-secondaryPink text-white p-4 rounded-2xl hover:bg-secondaryPurple transition-all duration-300 text-center hover:scale-105 sm:col-span-2 md:col-span-1">
-              Historical Map
-            </Link>
-          </div>
-        </div>
       </section>
 
       {/* Bookmarks Section */}
@@ -157,23 +165,8 @@ const Home = () => {
         </form>
       </section>
 
-      {/* Featured Verse Section */}
-      <section className="text-center mb-12 bg-bgLightBlue p-8 rounded-3xl shadow-xl border-4 border-white">
-        <h2 className="text-3xl font-bold mb-6 text-primaryBlue">Featured Verse of the Day</h2>
-        <blockquote className="text-xl italic text-textGray max-w-2xl mx-auto">
-          "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life." — John 3:16 (NIV)
-        </blockquote>
-        <p className="mt-4 text-lg text-secondaryPink">Reflect on this and add your thoughts!</p>
-      </section>
 
-      {/* Cartoon Image */}
-      <div className="text-center">
-        <img
-          src="https://placehold.co/800x400/png?text=Cartoon+Bible+Adventure+Dashboard&font=Fredoka"
-          alt="Fun Bible study cartoon"
-          className="rounded-3xl shadow-xl mx-auto max-w-full sm:max-w-3xl lg:max-w-4xl border-4 border-white hover:scale-105 transition-transform duration-300"
-        />
-      </div>
+    
     </div>
   );
 };
