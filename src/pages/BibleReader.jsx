@@ -20,7 +20,7 @@ const BibleReader = () => {
         <h1 className="text-4xl font-bold mb-6 text-primaryBlue dark:text-white text-center">{book}</h1>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
           {chapters.map((ch) => (
-            <Link key={ch} to={`/bible/${book}/${ch}`} className="bg-bgLightBlue dark:bg-gray-700 p-4 rounded-2xl text-center hover:bg-primaryBlue hover:text-white transition-all duration-300">
+            <Link key={ch} to={`/bible/${book}/${ch}`} className="bg-bgLightBlue text-white dark:bg-gray-700 p-4 rounded-2xl text-center hover:bg-primaryBlue hover:text-white transition-all duration-300">
               Chapter {ch}
             </Link>
           ))}
