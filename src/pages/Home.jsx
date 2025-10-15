@@ -104,6 +104,7 @@ const Home = () => {
           <div className="bg-primaryBlue/20 rounded-full h-4 overflow-hidden">
             <div className="bg-primaryBlue h-full" style={{ width: `${progress}%` }} />
           </div>
+          <p className="mt-4 text-red-500 text-center">Under Construction</p>
         </div>
 
         {/* Notes Card */}
@@ -121,6 +122,7 @@ const Home = () => {
           <button className="mt-4 w-full bg-secondaryPink text-white py-2 rounded-full shadow-lg hover:bg-pink-600 transition-all duration-300 hover:scale-105">
             Add New Note
           </button>
+          <p className="mt-4 text-red-500 text-center">Under Construction</p>
         </div>
 
       </section>
@@ -133,7 +135,7 @@ const Home = () => {
           <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
             <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Can I Trust The Bible?</h3>
             <a href="https://bible.apologeticscanada.com/" target="_blank" rel="noopener noreferrer">
-              <img src="https://i.ytimg.com/vi/QhVPBNBAGY0/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAjKogoyGRvmShLGEr7f3odCpO_0A" alt="Can I Trust The Bible?" className="w-full h-auto rounded-2xl mb-4" />
+              <img src="https://i.ytimg.com/vi/QhVPBNBAGY0/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAjKogoyGRvmShLGEr7f3odCpO_0A" alt="Can I Trust The Bible?" className="w-full h-48 object-cover rounded-2xl mb-4" />
               <p className="text-textGray hover:text-funPink hover:underline">Explore the reliability of the Bible</p>
             </a>
           </div>
@@ -141,7 +143,7 @@ const Home = () => {
           <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
             <h3 className="text-2xl font-bold mb-4 text-primaryBlue">The Shawn Ryan Show</h3>
             <a href="https://www.youtube.com/@ShawnRyanShow" target="_blank" rel="noopener noreferrer">
-              <img src="https://shawnryanshow.com/cdn/shop/files/Shawn-Ryan-Show-Website-Cover_189fbb8d-d19b-4d72-9657-6e9a9d482e22.jpg?v=1649170862&width=1500" alt="The Shawn Ryan Show" className="w-full h-auto rounded-2xl mb-4" />
+              <img src="https://shawnryanshow.com/cdn/shop/files/Shawn-Ryan-Show-Website-Cover_189fbb8d-d19b-4d72-9657-6e9a9d482e22.jpg?v=1649170862&width=1500" alt="The Shawn Ryan Show" className="w-full h-48 object-cover rounded-2xl mb-4" />
               <p className="text-textGray hover:text-funPink hover:underline">Watch interviews and stories</p>
             </a>
           </div>
@@ -149,7 +151,7 @@ const Home = () => {
           <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
             <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Jesus Calling</h3>
             <a href="https://www.jesuscalling.com/books/jesus-calling/" target="_blank" rel="noopener noreferrer">
-              <img src="https://s32213.pcdn.co/wp-content/uploads/2015/08/jc_book.png" alt="Jesus Calling" className="w-full h-auto rounded-2xl mb-4" />
+              <img src="https://s32213.pcdn.co/wp-content/uploads/2015/08/jc_book.png" alt="Jesus Calling" className="w-full h-48 object-cover rounded-2xl mb-4" />
               <p className="text-textGray hover:text-funPink hover:underline">A daily devotional</p>
             </a>
           </div>
