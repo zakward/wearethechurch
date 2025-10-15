@@ -6,8 +6,8 @@ import { ThemeContext } from '../ThemeContext.jsx';
 
 const BibleReader = () => {
   const { book, chapter } = useParams();
-  const { currentBibleData, markCompleted, currentTranslation } = useContext(BibleContext);
-  const { user, saveVerse, highlightVerse } = useContext(AuthContext);
+  const { currentBibleData, markCompleted, currentTranslation, setCurrentTranslation } = useContext(BibleContext);
+  const { user, saveVerse, highlightVerse, unsaveVerse, addBookmark, unbookmark } = useContext(AuthContext);
   const { fontSize, setFontSize, fontFamily, setFontFamily } = useContext(ThemeContext);
   const [mode, setMode] = useState('light');
   const [activeVerse, setActiveVerse] = useState(null);
@@ -45,18 +45,26 @@ const BibleReader = () => {
   let modeClass = 'bg-white text-textGray';
   let dropdownClass = 'bg-white text-gray-800 shadow-md';
   let hoverClass = 'hover:bg-gray-100';
+  let savedIndicatorColor = 'text-blue-500';
+  let bookmarkIndicatorColor = 'text-red-500';
   if (mode === 'dark') {
     modeClass = 'bg-gray-800 text-gray-200';
     dropdownClass = 'bg-gray-800 text-gray-200 shadow-lg shadow-gray-900/50';
     hoverClass = 'hover:bg-gray-700';
+    savedIndicatorColor = 'text-blue-300';
+    bookmarkIndicatorColor = 'text-red-300';
   } else if (mode === 'sepia') {
     modeClass = 'bg-[#FBF0D9] text-[#5F4B32]';
     dropdownClass = 'bg-[#FBF0D9] text-[#5F4B32] shadow-md shadow-[#5F4B32]/20';
     hoverClass = 'hover:bg-[#E8D9B8]';
+    savedIndicatorColor = 'text-[#3F2B1E]';
+    bookmarkIndicatorColor = 'text-[#8B4513]';
   } else if (mode === 'high-contrast') {
     modeClass = 'bg-black text-yellow-300';
     dropdownClass = 'bg-black text-yellow-300 shadow-md shadow-white/10';
     hoverClass = 'hover:bg-gray-900';
+    savedIndicatorColor = 'text-yellow-500';
+    bookmarkIndicatorColor = 'text-red-400';
   }
 
   const handleSave = (v) => {
@@ -77,6 +85,24 @@ const BibleReader = () => {
 
   const handleHighlight = (v) => {
     highlightVerse(book, Number(chapter), Number(v));
+    setActiveVerse(null);
+  };
+
+  const handleUnsave = (v) => {
+    unsaveVerse(book, Number(chapter), Number(v));
+  };
+
+  const handleBookmark = (v) => {
+    const text = chapterData[v];
+    const obj = { book, chapter: Number(chapter), verse: Number(v), text, translation: currentTranslation };
+    const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(chapter) && b.verse === Number(v)) || false;
+    if (isBookmarked) {
+      unbookmark(book, Number(chapter), Number(v));
+      alert('Bookmark removed!');
+    } else {
+      addBookmark(obj);
+      alert('Bookmark added!');
+    }
     setActiveVerse(null);
   };
 
@@ -110,27 +136,42 @@ const BibleReader = () => {
               <option value="sans">Sans-serif (Arial)</option>
             </select>
           </div>
+          <div className="flex flex-col">
+            <label htmlFor="translation" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Translation</label>
+            <select id="translation" value={currentTranslation} onChange={(e) => setCurrentTranslation(e.target.value)} className="p-2 rounded bg-bgLightBlue dark:bg-gray-700 dark:text-gray-300">
+              <option value="NIV">NIV</option>
+              <option value="KJV">KJV</option>
+            </select>
+          </div>
         </div>
         <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">{book} {chapter}</h1>
       </div>
       <div className={`space-y-2 sm:space-y-4 p-2 sm:p-4 rounded-md ${modeClass}`}>
         {verses.map((v) => {
           const isHighlighted = user?.highlightedVerses?.some(h => h.book === book && h.chapter === Number(chapter) && h.verse === Number(v)) || false;
+          const isSaved = user?.savedVerses?.some(s => s.book === book && s.chapter === Number(chapter) && s.verse === Number(v)) || false;
+          const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(chapter) && b.verse === Number(v)) || false;
           return (
             <div key={v} className="relative">
               <p
                 id={`verse-${v}`}
                 onClick={() => setActiveVerse(activeVerse === v ? null : v)}
-                className={`${isHighlighted ? 'bg-yellow-200 dark:bg-yellow-800/50 sepia:bg-yellow-300/50 high-contrast:bg-yellow-500/30' : ''} cursor-pointer select-text`}
+                className={`${isHighlighted ? 'bg-yellow-200 dark:bg-yellow-800/50 sepia:bg-yellow-300/50 high-contrast:bg-yellow-500/30' : ''} cursor-pointer select-text flex items-start`}
               >
-                <sup className="font-bold mr-2">{v}</sup>{chapterData[v]}
+                <sup className="font-bold mr-2 flex-shrink-0">{v}</sup>
+                {isSaved && <span className={`mr-2 text-xs ${savedIndicatorColor} cursor-pointer`} onClick={(e) => { e.stopPropagation(); handleUnsave(v); }}>⭐</span>}
+                {isBookmarked && <span className={`mr-2 text-xs ${bookmarkIndicatorColor} cursor-pointer`} onClick={(e) => { e.stopPropagation(); handleUnbookmark(v); }}>🔖</span>}
+                <span className="flex-grow">{chapterData[v]}</span>
               </p>
               {activeVerse === v && (
-                <div className={`absolute left-0 z-10 mt-1 w-48 rounded-md shadow-lg ${dropdownClass}`}>
-                  <button onClick={() => handleSave(v)} className={`block w-full text-left px-4 py-2 text-sm ${hoverClass}`}>Save Verse</button>
-                  <button onClick={() => handleShare(v)} className={`block w-full text-left px-4 py-2 text-sm ${hoverClass}`}>Share Verse</button>
-                  <button onClick={() => handleHighlight(v)} className={`block w-full text-left px-4 py-2 text-sm ${hoverClass}`}>
+                <div className={`absolute left-0 z-10 mt-1 w-[80vw] md:w-64 rounded-md shadow-2xl ${dropdownClass}`}>
+                  <button onClick={() => handleSave(v)} className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}>Save Verse</button>
+                  <button onClick={() => handleShare(v)} className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}>Share Verse</button>
+                  <button onClick={() => handleHighlight(v)} className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}>
                     {isHighlighted ? 'Unhighlight Verse' : 'Highlight Verse'}
+                  </button>
+                  <button onClick={() => handleBookmark(v)} className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}>
+                    {isBookmarked ? 'Remove Bookmark' : 'Add Bookmark'}
                   </button>
                 </div>
               )}

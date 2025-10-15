@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useContext, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthContext, AuthProvider } from './AuthContext.jsx';
 import { BibleProvider } from './BibleContext.jsx';
 import { ThemeProvider } from './ThemeContext.jsx';
@@ -13,6 +13,7 @@ import PersonDetail from './pages/PersonDetail.jsx';
 import Map from './pages/Map.jsx';
 import SavedVerses from './pages/SavedVerses.jsx';
 import Nav from './components/Nav.jsx';
+import Bookmarks from './pages/Bookmarks.jsx';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -23,6 +24,12 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
     <AuthProvider>
       <BibleProvider>
@@ -40,6 +47,7 @@ function App() {
                 <Route path="/persons/:name" element={<ProtectedRoute><PersonDetail /></ProtectedRoute>} />
                 <Route path="/saved-verses" element={<ProtectedRoute><SavedVerses /></ProtectedRoute>} />
                 <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
+                <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
               </Routes>
             </div>
           </div>

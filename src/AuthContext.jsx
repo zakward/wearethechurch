@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
       ...u,
       savedVerses: u.savedVerses || [],
       highlightedVerses: u.highlightedVerses || [],
+      bookmarks: u.bookmarks || [],
       unreadSavedCount: u.unreadSavedCount || 0
     }));
     if (JSON.stringify(storedUsers) !== JSON.stringify(updatedUsers)) {
@@ -26,6 +27,7 @@ export const AuthProvider = ({ children }) => {
         ...storedUser,
         savedVerses: storedUser.savedVerses || [],
         highlightedVerses: storedUser.highlightedVerses || [],
+        bookmarks: storedUser.bookmarks || [],
         unreadSavedCount: storedUser.unreadSavedCount || 0
       };
       if (JSON.stringify(storedUser) !== JSON.stringify(fixedUser)) {
@@ -41,7 +43,7 @@ export const AuthProvider = ({ children }) => {
       alert('Email already exists');
       return;
     }
-    const newUser = { name, email, password, savedVerses: [], highlightedVerses: [], unreadSavedCount: 0 }; // Note: In real app, hash password!
+    const newUser = { name, email, password, savedVerses: [], highlightedVerses: [], bookmarks: [], unreadSavedCount: 0 }; // Note: In real app, hash password!
     const updatedUsers = [...users, newUser];
     setUsers(updatedUsers);
     localStorage.setItem('users', JSON.stringify(updatedUsers));
@@ -56,6 +58,7 @@ export const AuthProvider = ({ children }) => {
         ...foundUser,
         savedVerses: foundUser.savedVerses || [],
         highlightedVerses: foundUser.highlightedVerses || [],
+        bookmarks: foundUser.bookmarks || [],
         unreadSavedCount: foundUser.unreadSavedCount || 0
       };
       setUser(fixedUser);
@@ -99,6 +102,51 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('users', JSON.stringify(updatedUsers));
   };
 
+  const unsaveVerse = (book, chapter, verse) => {
+    if (!user) return;
+    const newSaved = (user.savedVerses || []).filter(s => !(s.book === book && s.chapter === chapter && s.verse === verse));
+    const updatedUser = { ...user, savedVerses: newSaved };
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  const addBookmark = (bookmarkObj) => {
+    if (!user) return;
+    const newBookmarks = [bookmarkObj, ...(user.bookmarks || [])]; // Add to beginning for last added first
+    const updatedUser = { ...user, bookmarks: newBookmarks };
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  const deleteBookmark = (index) => {
+    if (!user) return;
+    const newBookmarks = [...(user.bookmarks || [])];
+    newBookmarks.splice(index, 1);
+    const updatedUser = { ...user, bookmarks: newBookmarks };
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  const unbookmark = (book, chapter, verse) => {
+    if (!user) return;
+    const newBookmarks = (user.bookmarks || []).filter(b => !(b.book === book && b.chapter === chapter && b.verse === verse));
+    const updatedUser = { ...user, bookmarks: newBookmarks };
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
   const resetUnreadSaved = () => {
     if (!user || user.unreadSavedCount === 0) return;
     const updatedUser = { ...user, unreadSavedCount: 0 };
@@ -128,7 +176,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signup, login, logout, saveVerse, deleteSavedVerse, highlightVerse, resetUnreadSaved }}>
+    <AuthContext.Provider value={{ user, loading, signup, login, logout, saveVerse, deleteSavedVerse, unsaveVerse, addBookmark, deleteBookmark, unbookmark, highlightVerse, resetUnreadSaved }}>
       {children}
     </AuthContext.Provider>
   );
