@@ -155,6 +155,22 @@ const Home = () => {
               <p className="text-textGray hover:text-funPink hover:underline">A daily devotional</p>
             </a>
           </div>
+          {/* Got Questions? */}
+          <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
+            <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Got Questions?</h3>
+            <a href="https://www.gotquestions.org/questions_Bible.html" target="_blank" rel="noopener noreferrer">
+              <img src="https://redeeminggod.com/wp-content/uploads/2014/05/bible-questions.jpg" alt="Got Questions?" className="w-full h-48 object-cover rounded-2xl mb-4" />
+              <p className="text-textGray hover:text-funPink hover:underline">Answers to Bible questions</p>
+            </a>
+          </div>
+          {/* Case for Christ */}
+          <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
+            <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Case for Christ</h3>
+            <a href="https://www.amazon.com/Case-Christ-Journalists-Personal-Investigation/dp/0310350034" target="_blank" rel="noopener noreferrer">
+              <img src="https://m.media-amazon.com/images/I/71Utqy+1v1L._UF1000,1000_QL80_.jpg" alt="Case for Christ" className="w-full h-48 object-cover rounded-2xl mb-4" />
+              <p className="text-textGray hover:text-funPink hover:underline">Investigate the evidence for Christ</p>
+            </a>
+          </div>
         </div>
       </section>
     </div>
