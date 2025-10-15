@@ -156,7 +156,7 @@ const BibleReader = () => {
               <p
                 id={`verse-${v}`}
                 onClick={() => setActiveVerse(activeVerse === v ? null : v)}
-                className={`${isHighlighted ? 'bg-yellow-200 dark:bg-yellow-800/50 sepia:bg-yellow-300/50 high-contrast:bg-yellow-500/30' : ''} cursor-pointer select-text flex items-start`}
+                className={`${isHighlighted ? 'bg-yellow-300 dark:bg-yellow-300/80 sepia:bg-yellow-200/80 high-contrast:bg-yellow-400/90' : ''} cursor-pointer select-text flex items-start`}
               >
                 <sup className="font-bold mr-2 flex-shrink-0">{v}</sup>
                 {isSaved && <span className={`mr-2 text-xs ${savedIndicatorColor} cursor-pointer`} onClick={(e) => { e.stopPropagation(); handleUnsave(v); }}>⭐</span>}
