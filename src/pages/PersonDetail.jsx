@@ -13,6 +13,8 @@ const PersonDetail = () => {
 
   if (!person) return <p className="text-center text-red-500">Person not found.</p>;
 
+  const era = `${Math.abs(person.chronology)} ${person.chronology < 0 ? 'BCE' : 'AD'}`;
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <Link to="/persons" className="text-primaryBlue hover:underline mb-6 inline-block">← Back to People</Link>
@@ -23,6 +25,16 @@ const PersonDetail = () => {
           <p><strong>References:</strong> {person.references}</p>
           <p><strong>Importance:</strong> {person.importance}</p>
           <p><strong>Death:</strong> {person.death}</p>
+          <p><strong>Approximate Era:</strong> {era}</p>
+          <div className="whitespace-pre-line">
+            <strong>Biblical Events:</strong> {person.biblicalEvents}
+          </div>
+          <div className="whitespace-pre-line">
+            <strong>Theological Significance:</strong> {person.theologicalSignificance}
+          </div>
+          <div className="whitespace-pre-line">
+            <strong>Historical Note:</strong> {person.historicalNote}
+          </div>
         </div>
         <img
           src={`https://placehold.co/600x300/png?text=Cartoon+${person.name}&font=Fredoka`}
