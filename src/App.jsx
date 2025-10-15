@@ -11,10 +11,14 @@ import BibleReader from './pages/BibleReader.jsx';
 import Persons from './pages/Persons.jsx';
 import PersonDetail from './pages/PersonDetail.jsx';
 import Map from './pages/Map.jsx';
+import SavedVerses from './pages/SavedVerses.jsx';
 import Nav from './components/Nav.jsx';
 
 const ProtectedRoute = ({ children }) => {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+  if (loading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
   return user ? children : <Navigate to="/login" />;
 };
 
@@ -34,6 +38,7 @@ function App() {
                 <Route path="/bible/:book/:chapter?" element={<ProtectedRoute><BibleReader /></ProtectedRoute>} />
                 <Route path="/persons" element={<ProtectedRoute><Persons /></ProtectedRoute>} />
                 <Route path="/persons/:name" element={<ProtectedRoute><PersonDetail /></ProtectedRoute>} />
+                <Route path="/saved-verses" element={<ProtectedRoute><SavedVerses /></ProtectedRoute>} />
                 <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
               </Routes>
             </div>

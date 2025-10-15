@@ -43,7 +43,7 @@ const Persons = () => {
             placeholder="Enter name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-3 bg-white border-2 border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple hover:scale-105 transition-all duration-300 shadow-sm"
+            className="w-full p-3 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple hover:scale-105 transition-all duration-300 shadow-sm"
           />
         </div>
         <div className="flex flex-col w-full sm:w-1/4">
@@ -52,7 +52,7 @@ const Persons = () => {
             id="filter"
             value={filterOption}
             onChange={(e) => setFilterOption(e.target.value)}
-            className="w-full p-3 bg-white border-2 border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple hover:scale-105 transition-all duration-300 shadow-sm appearance-none"
+            className="w-full p-3 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple hover:scale-105 transition-all duration-300 shadow-sm appearance-none"
             style={{
               backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23374151"><path d="M10 14l-6-6h12l-6 6z"/></svg>')`,
               backgroundRepeat: 'no-repeat',
@@ -72,7 +72,7 @@ const Persons = () => {
             id="sort"
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value)}
-            className="w-full p-3 bg-white border-2 border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple hover:scale-105 transition-all duration-300 shadow-sm appearance-none"
+            className="w-full p-3 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple hover:scale-105 transition-all duration-300 shadow-sm appearance-none"
             style={{
               backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23374151"><path d="M10 14l-6-6h12l-6 6z"/></svg>')`,
               backgroundRepeat: 'no-repeat',
@@ -97,10 +97,10 @@ const Persons = () => {
                 <li key={index}>
                   <Link
                     to={`/persons/${person.name.toLowerCase()}`}
-                    className="block bg-white p-3 rounded-2xl shadow-xl hover:bg-accent hover:text-white transition-all duration-300 border-2 border-secondaryPurple"
+                    className="block bg-white p-3 rounded-2xl shadow-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 border border-secondaryPurple"
                   >
-                    <h3 className="text-xl font-bold text-funPink hover:text-white">{person.name}</h3>
-                    <p className="text-textGray hover:text-white">{person.title}</p>
+                    <h3 className="text-xl font-bold text-funPink">{person.name}</h3>
+                    <p className="text-textGray">{person.title}</p>
                   </Link>
                 </li>
               ))}
@@ -115,10 +115,10 @@ const Persons = () => {
                 <li key={index}>
                   <Link
                     to={`/persons/${person.name.toLowerCase()}`}
-                    className="block bg-white p-3 rounded-2xl shadow-xl hover:bg-accent hover:text-white transition-all duration-300 border-2 border-secondaryPurple"
+                    className="block bg-white p-3 rounded-2xl shadow-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 border border-secondaryPurple"
                   >
-                    <h3 className="text-xl font-bold text-funPink hover:text-white">{person.name}</h3>
-                    <p className="text-textGray hover:text-white">{person.title}</p>
+                    <h3 className="text-xl font-bold text-funPink">{person.name}</h3>
+                    <p className="text-textGray">{person.title}</p>
                   </Link>
                 </li>
               ))}

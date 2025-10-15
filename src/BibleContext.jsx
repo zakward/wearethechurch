@@ -11,7 +11,9 @@ import React, { createContext, useState, useEffect } from 'react';
 //   },
 //   // ... more books as keys
 // }
-import bibleData from './data/BibleTranslations/NIV/NIV_bible.json';
+import nivBibleData from './data/BibleTranslations/NIV/NIV_bible.json';
+
+import kjvBibleData from './data/BibleTranslations/KJV/KJV_bible.json';
 
 export const BibleContext = createContext();
 
@@ -19,7 +21,9 @@ export const BibleProvider = ({ children }) => {
   const [bookmarks, setBookmarks] = useState([]);
   const [completed, setCompleted] = useState({}); // e.g., { "Genesis": { chapters: [1, 2], versesCompleted: 50 } }
   const [goals, setGoals] = useState([]);
-  const books = Object.keys(bibleData);
+  const [currentTranslation, setCurrentTranslation] = useState('NIV');
+  const currentBibleData = currentTranslation === 'NIV' ? nivBibleData : kjvBibleData;
+  const books = Object.keys(currentBibleData);
   const totalBooks = books.length;
 
   useEffect(() => {
@@ -43,7 +47,7 @@ export const BibleProvider = ({ children }) => {
     if (!updated[book]) updated[book] = { chapters: [], versesCompleted: 0 };
     if (!updated[book].chapters.includes(chapter)) {
       updated[book].chapters.push(chapter);
-      const bookData = bibleData[book];
+      const bookData = currentBibleData[book];
       if (bookData) {
         const chapterStr = chapter.toString();
         const chapterData = bookData[chapterStr];
@@ -65,7 +69,7 @@ export const BibleProvider = ({ children }) => {
 
   const getOverallProgress = () => {
     let totalVerses = 0;
-    Object.values(bibleData).forEach(book => {
+    Object.values(currentBibleData).forEach(book => {
       Object.values(book).forEach(chap => {
         totalVerses += Object.keys(chap).length;
       });
@@ -75,7 +79,7 @@ export const BibleProvider = ({ children }) => {
   };
 
   return (
-    <BibleContext.Provider value={{ bibleData, books, bookmarks, addBookmark, completed, markCompleted, goals, addGoal, getOverallProgress }}>
+    <BibleContext.Provider value={{ currentBibleData, books, bookmarks, addBookmark, completed, markCompleted, goals, addGoal, getOverallProgress, currentTranslation, setCurrentTranslation }}>
       {children}
     </BibleContext.Provider>
   );
