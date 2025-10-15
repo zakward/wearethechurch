@@ -1,3 +1,4 @@
+// AuthContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
@@ -43,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       alert('Email already exists');
       return;
     }
-    const newUser = { name, email, password, savedVerses: [], highlightedVerses: [], bookmarks: [], unreadSavedCount: 0 }; // Note: In real app, hash password!
+    const newUser = { name, email, password, savedVerses: [], highlightedVerses: [], bookmarks: [], unreadSavedCount: 0 };
     const updatedUsers = [...users, newUser];
     setUsers(updatedUsers);
     localStorage.setItem('users', JSON.stringify(updatedUsers));
@@ -115,7 +116,7 @@ export const AuthProvider = ({ children }) => {
 
   const addBookmark = (bookmarkObj) => {
     if (!user) return;
-    const newBookmarks = [bookmarkObj, ...(user.bookmarks || [])]; // Add to beginning for last added first
+    const newBookmarks = [bookmarkObj, ...(user.bookmarks || [])];
     const updatedUser = { ...user, bookmarks: newBookmarks };
     setUser(updatedUser);
     localStorage.setItem('currentUser', JSON.stringify(updatedUser));
@@ -181,3 +182,5 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;
