@@ -1,4 +1,3 @@
-// AuthContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
@@ -6,6 +5,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
+  const [forumPosts, setForumPosts] = useState([]); // Global forum posts
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,7 +15,10 @@ export const AuthProvider = ({ children }) => {
       savedVerses: u.savedVerses || [],
       highlightedVerses: u.highlightedVerses || [],
       bookmarks: u.bookmarks || [],
-      unreadSavedCount: u.unreadSavedCount || 0
+      notes: u.notes || [],
+      unreadSavedCount: u.unreadSavedCount || 0,
+      unreadNotesCount: u.unreadNotesCount || 0,
+      unreadBookmarksCount: u.unreadBookmarksCount || 0 // Add unread bookmarks count
     }));
     if (JSON.stringify(storedUsers) !== JSON.stringify(updatedUsers)) {
       localStorage.setItem('users', JSON.stringify(updatedUsers));
@@ -29,13 +32,21 @@ export const AuthProvider = ({ children }) => {
         savedVerses: storedUser.savedVerses || [],
         highlightedVerses: storedUser.highlightedVerses || [],
         bookmarks: storedUser.bookmarks || [],
-        unreadSavedCount: storedUser.unreadSavedCount || 0
+        notes: storedUser.notes || [],
+        unreadSavedCount: storedUser.unreadSavedCount || 0,
+        unreadNotesCount: storedUser.unreadNotesCount || 0,
+        unreadBookmarksCount: storedUser.unreadBookmarksCount || 0 // Add unread bookmarks count
       };
       if (JSON.stringify(storedUser) !== JSON.stringify(fixedUser)) {
         localStorage.setItem('currentUser', JSON.stringify(fixedUser));
       }
       setUser(fixedUser);
     }
+
+    // Load forum posts from localStorage (simulating public storage)
+    const storedForumPosts = JSON.parse(localStorage.getItem('forumPosts')) || [];
+    setForumPosts(storedForumPosts);
+
     setLoading(false);
   }, []);
 
@@ -44,7 +55,18 @@ export const AuthProvider = ({ children }) => {
       alert('Email already exists');
       return;
     }
-    const newUser = { name, email, password, savedVerses: [], highlightedVerses: [], bookmarks: [], unreadSavedCount: 0 };
+    const newUser = {
+      name,
+      email,
+      password,
+      savedVerses: [],
+      highlightedVerses: [],
+      bookmarks: [],
+      notes: [],
+      unreadSavedCount: 0,
+      unreadNotesCount: 0,
+      unreadBookmarksCount: 0 // Initialize unread bookmarks count
+    };
     const updatedUsers = [...users, newUser];
     setUsers(updatedUsers);
     localStorage.setItem('users', JSON.stringify(updatedUsers));
@@ -60,7 +82,10 @@ export const AuthProvider = ({ children }) => {
         savedVerses: foundUser.savedVerses || [],
         highlightedVerses: foundUser.highlightedVerses || [],
         bookmarks: foundUser.bookmarks || [],
-        unreadSavedCount: foundUser.unreadSavedCount || 0
+        notes: foundUser.notes || [],
+        unreadSavedCount: foundUser.unreadSavedCount || 0,
+        unreadNotesCount: foundUser.unreadNotesCount || 0,
+        unreadBookmarksCount: foundUser.unreadBookmarksCount || 0 // Add unread bookmarks count
       };
       setUser(fixedUser);
       localStorage.setItem('currentUser', JSON.stringify(fixedUser));
@@ -117,7 +142,8 @@ export const AuthProvider = ({ children }) => {
   const addBookmark = (bookmarkObj) => {
     if (!user) return;
     const newBookmarks = [bookmarkObj, ...(user.bookmarks || [])];
-    const updatedUser = { ...user, bookmarks: newBookmarks };
+    const newCount = (user.unreadBookmarksCount || 0) + 1; // Increment unread bookmarks count
+    const updatedUser = { ...user, bookmarks: newBookmarks, unreadBookmarksCount: newCount };
     setUser(updatedUser);
     localStorage.setItem('currentUser', JSON.stringify(updatedUser));
     const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
@@ -148,16 +174,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('users', JSON.stringify(updatedUsers));
   };
 
-  const resetUnreadSaved = () => {
-    if (!user || user.unreadSavedCount === 0) return;
-    const updatedUser = { ...user, unreadSavedCount: 0 };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-  };
-
   const highlightVerse = (book, chapter, verse) => {
     if (!user) return;
     const hObj = { book, chapter, verse };
@@ -176,8 +192,128 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('users', JSON.stringify(updatedUsers));
   };
 
+  const addNote = (noteObj) => {
+    if (!user) return;
+    const newNotes = [noteObj, ...(user.notes || [])];
+    const newCount = (user.unreadNotesCount || 0) + 1;
+    const updatedUser = { ...user, notes: newNotes, unreadNotesCount: newCount };
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  const deleteNote = (index) => {
+    if (!user) return;
+    const newNotes = [...(user.notes || [])];
+    newNotes.splice(index, 1);
+    const updatedUser = { ...user, notes: newNotes };
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  const resetUnreadNotes = () => {
+    if (!user || user.unreadNotesCount === 0) return;
+    const updatedUser = { ...user, unreadNotesCount: 0 };
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  const resetUnreadSaved = () => {
+    if (!user || user.unreadSavedCount === 0) return;
+    const updatedUser = { ...user, unreadSavedCount: 0 };
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  const resetUnreadBookmarks = () => {
+    if (!user || user.unreadBookmarksCount === 0) return;
+    const updatedUser = { ...user, unreadBookmarksCount: 0 };
+    setUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
+    setUsers(updatedUsers);
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+  };
+
+  // Add forum post functionality
+  const addForumPost = (postObj) => {
+    if (!user) return;
+    const newPost = { ...postObj, userName: user.name, userEmail: user.email, id: Date.now(), comments: [] };
+    const updatedPosts = [...forumPosts, newPost];
+    setForumPosts(updatedPosts);
+    localStorage.setItem('forumPosts', JSON.stringify(updatedPosts));
+  };
+
+  const addComment = (postId, commentText) => {
+    if (!user) return;
+    const updatedPosts = forumPosts.map(post => {
+      if (post.id === postId) {
+        const newComment = { userName: user.name, userEmail: user.email, text: commentText, timestamp: new Date().toISOString() };
+        return { ...post, comments: [...post.comments, newComment] };
+      }
+      return post;
+    });
+    setForumPosts(updatedPosts);
+    localStorage.setItem('forumPosts', JSON.stringify(updatedPosts));
+  };
+
+  const deleteForumPost = (postId) => {
+    if (!user) return;
+    const updatedPosts = forumPosts.filter(post => post.id !== postId);
+    setForumPosts(updatedPosts);
+    localStorage.setItem('forumPosts', JSON.stringify(updatedPosts));
+  };
+
+  const deleteComment = (postId, commentIndex) => {
+    if (!user) return;
+    const updatedPosts = forumPosts.map(post => {
+      if (post.id === postId) {
+        const newComments = [...post.comments];
+        newComments.splice(commentIndex, 1);
+        return { ...post, comments: newComments };
+      }
+      return post;
+    });
+    setForumPosts(updatedPosts);
+    localStorage.setItem('forumPosts', JSON.stringify(updatedPosts));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signup, login, logout, saveVerse, deleteSavedVerse, unsaveVerse, addBookmark, deleteBookmark, unbookmark, highlightVerse, resetUnreadSaved }}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      signup,
+      login,
+      logout,
+      saveVerse,
+      deleteSavedVerse,
+      unsaveVerse,
+      addBookmark,
+      deleteBookmark,
+      unbookmark,
+      highlightVerse,
+      addNote,
+      deleteNote,
+      resetUnreadNotes,
+      resetUnreadSaved,
+      resetUnreadBookmarks,
+      forumPosts,
+      addForumPost,
+      addComment,
+      deleteForumPost,
+      deleteComment
+    }}>
       {children}
     </AuthContext.Provider>
   );

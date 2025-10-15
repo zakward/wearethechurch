@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
+
 const Nav = () => {
   const { user, logout } = useContext(AuthContext);
   const location = useLocation();
@@ -44,7 +45,23 @@ const Nav = () => {
                   </span>
                 )}
               </div>
-              <Link to="/bookmarks" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/bookmarks')} transition-all duration-300 hover:scale-105`}>Bookmarks</Link>
+              <div className="relative">
+                <Link to="/notes" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/notes')} transition-all duration-300 hover:scale-105`}>Notes</Link>
+                {user?.unreadNotesCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                    {user.unreadNotesCount}
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <Link to="/bookmarks" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/bookmarks')} transition-all duration-300 hover:scale-105`}>Bookmarks</Link>
+                {user?.unreadBookmarksCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                    {user.unreadBookmarksCount}
+                  </span>
+                )}
+              </div>
+              <Link to="/forum" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/forum')} transition-all duration-300 hover:scale-105`}>Forum</Link> {/* New Forum link */}
               <Link to="/map" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/map')} transition-all duration-300 hover:scale-105`}>Map</Link>
               <Link to="/help" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/help')} transition-all duration-300 hover:scale-105`}>Help</Link>
               <button onClick={handleContinueReading} className="py-2 px-3 rounded-full text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all duration-300 hover:scale-105">Continue</button>
@@ -86,7 +103,13 @@ const Nav = () => {
                   <Link to="/saved-verses" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/saved-verses')}`}>
                     Saved Verses {user?.unreadSavedCount > 0 && `(${user.unreadSavedCount})`}
                   </Link>
-                  <Link to="/bookmarks" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/bookmarks')}`}>Bookmarks</Link>
+                  <Link to="/notes" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/notes')}`}>
+                    Notes {user?.unreadNotesCount > 0 && `(${user.unreadNotesCount})`}
+                  </Link>
+                  <Link to="/bookmarks" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/bookmarks')}`}>
+                    Bookmarks {user?.unreadBookmarksCount > 0 && `(${user.unreadBookmarksCount})`}
+                  </Link>
+                  <Link to="/forum" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/forum')}`}>Forum</Link> {/* New Forum link in mobile modal */}
                   <Link to="/map" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/map')}`}>Map</Link>
                   <Link to="/help" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/help')}`}>Help</Link>
                   <button onClick={handleContinueReading} className="py-3 px-6 rounded-full text-green-600 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300">Continue Reading</button>
