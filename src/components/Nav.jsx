@@ -8,7 +8,7 @@ const Nav = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const isActive = (path) => location.pathname === path ? 'bg-primaryBlue text-white' : 'hover:bg-blue-700 hover:text-white';
+  const isActive = (path) => (location.pathname === path ? 'bg-primaryBlue text-white' : 'hover:bg-blue-700 hover:text-white');
 
   const handleContinueReading = () => {
     if (user?.bookmarks?.length > 0) {
@@ -29,16 +29,36 @@ const Nav = () => {
     <nav className="sticky top-0 bg-gradient-to-r from-gray-900 to-blue-900 bg-opacity-95 shadow-lg z-50 p-3 md:p-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="text-xl md:text-2xl font-bold text-white drop-shadow-md">We Are The Church 🏠</Link>
-        
+        <Link to="/" className="text-xl md:text-2xl font-bold text-white drop-shadow-md">
+          We Are The Church 🏠
+        </Link>
+
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-2">
           {user ? (
             <>
-              <Link to="/bible" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/bible')} transition-all duration-300 hover:scale-105`}>Bible Books</Link>
-              <Link to="/persons" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/persons')} transition-all duration-300 hover:scale-105`}>People</Link>
+              <Link
+                to="/bible"
+                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/bible')} transition-all duration-300 hover:scale-105`}
+                aria-label="Bible Books"
+              >
+                Bible Books
+              </Link>
+              <Link
+                to="/persons"
+                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/persons')} transition-all duration-300 hover:scale-105`}
+                aria-label="People"
+              >
+                People
+              </Link>
               <div className="relative">
-                <Link to="/saved-verses" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/saved-verses')} transition-all duration-300 hover:scale-105`}>Saved</Link>
+                <Link
+                  to="/saved-verses"
+                  className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/saved-verses')} transition-all duration-300 hover:scale-105`}
+                  aria-label="Saved Verses"
+                >
+                  Saved
+                </Link>
                 {user?.unreadSavedCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
                     {user.unreadSavedCount}
@@ -46,7 +66,13 @@ const Nav = () => {
                 )}
               </div>
               <div className="relative">
-                <Link to="/notes" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/notes')} transition-all duration-300 hover:scale-105`}>Notes</Link>
+                <Link
+                  to="/notes"
+                  className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/notes')} transition-all duration-300 hover:scale-105`}
+                  aria-label="Notes"
+                >
+                  Notes
+                </Link>
                 {user?.unreadNotesCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
                     {user.unreadNotesCount}
@@ -54,30 +80,89 @@ const Nav = () => {
                 )}
               </div>
               <div className="relative">
-                <Link to="/bookmarks" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/bookmarks')} transition-all duration-300 hover:scale-105`}>Bookmarks</Link>
+                <Link
+                  to="/bookmarks"
+                  className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/bookmarks')} transition-all duration-300 hover:scale-105`}
+                  aria-label="Bookmarks"
+                >
+                  Bookmarks
+                </Link>
                 {user?.unreadBookmarksCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
                     {user.unreadBookmarksCount}
                   </span>
                 )}
               </div>
-              <Link to="/forum" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/forum')} transition-all duration-300 hover:scale-105`}>Forum</Link> {/* New Forum link */}
-              <Link to="/map" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/map')} transition-all duration-300 hover:scale-105`}>Map</Link>
-              <Link to="/help" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/help')} transition-all duration-300 hover:scale-105`}>Help</Link>
-              <button onClick={handleContinueReading} className="py-2 px-3 rounded-full text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all duration-300 hover:scale-105">Continue</button>
-              <button onClick={handleLogout} className="py-2 px-3 rounded-full text-sm font-semibold text-white bg-secondaryPink hover:bg-pink-600 transition-all duration-300 hover:scale-105">Logout</button>
+              <Link
+                to="/forum"
+                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/forum')} transition-all duration-300 hover:scale-105`}
+                aria-label="Forum"
+              >
+                Forum
+              </Link>
+              <Link
+                to="/map"
+                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/map')} transition-all duration-300 hover:scale-105`}
+                aria-label="Map"
+              >
+                Map
+              </Link>
+              <Link
+                to="/help"
+                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/help')} transition-all duration-300 hover:scale-105`}
+                aria-label="Help"
+              >
+                Help
+              </Link>
+              <button
+                onClick={handleContinueReading}
+                className="py-2 px-3 rounded-full text-sm font-semibold text-white bg-green-600 hover:bg-green-700 transition-all duration-300 hover:scale-105"
+                aria-label="Continue Reading"
+              >
+                Continue
+              </button>
+              <button
+                onClick={handleLogout}
+                className="py-2 px-3 rounded-full text-sm font-semibold text-white bg-secondaryPink hover:bg-pink-600 transition-all duration-300 hover:scale-105"
+                aria-label="Logout"
+              >
+                Logout
+              </button>
             </>
           ) : (
             <>
-              <Link to="/login" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/login')} transition-all duration-300 hover:scale-105`}>Login</Link>
-              <Link to="/signup" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/signup')} transition-all duration-300 hover:scale-105`}>Signup</Link>
-              <Link to="/help" className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/help')} transition-all duration-300 hover:scale-105`}>Help</Link>
+              <Link
+                to="/login"
+                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/login')} transition-all duration-300 hover:scale-105`}
+                aria-label="Login"
+              >
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/signup')} transition-all duration-300 hover:scale-105`}
+                aria-label="Signup"
+              >
+                Signup
+              </Link>
+              <Link
+                to="/help"
+                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/help')} transition-all duration-300 hover:scale-105`}
+                aria-label="Help"
+              >
+                Help
+              </Link>
             </>
           )}
         </div>
-        
+
         {/* Mobile Hamburger */}
-        <button className="md:hidden text-white focus:outline-none" onClick={() => setIsModalOpen(true)}>
+        <button
+          className="md:hidden text-white focus:outline-none"
+          onClick={() => setIsModalOpen(true)}
+          aria-label="Open navigation menu"
+          aria-expanded={isModalOpen}
+        >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
@@ -87,39 +172,126 @@ const Nav = () => {
       {/* Mobile Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 w-4/5 max-w-md p-6 rounded-3xl shadow-2xl">
+          <div className="bg-white dark:bg-gray-800 w-11/12 max-w-md max-h-[80vh] p-4 rounded-3xl shadow-2xl overflow-y-auto">
             <div className="flex justify-end">
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100"
+                aria-label="Close navigation menu"
+              >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="flex flex-col space-y-4 text-center text-xl">
+            <div className="flex flex-col space-y-2 text-center text-lg">
               {user ? (
                 <>
-                  <Link to="/bible" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/bible')}`}>Bible Books</Link>
-                  <Link to="/persons" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/persons')}`}>People</Link>
-                  <Link to="/saved-verses" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/saved-verses')}`}>
+                  <Link
+                    to="/bible"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/bible')}`}
+                    aria-label="Bible Books"
+                  >
+                    Bible Books
+                  </Link>
+                  <Link
+                    to="/persons"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/persons')}`}
+                    aria-label="People"
+                  >
+                    People
+                  </Link>
+                  <Link
+                    to="/saved-verses"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/saved-verses')}`}
+                    aria-label="Saved Verses"
+                  >
                     Saved Verses {user?.unreadSavedCount > 0 && `(${user.unreadSavedCount})`}
                   </Link>
-                  <Link to="/notes" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/notes')}`}>
+                  <Link
+                    to="/notes"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/notes')}`}
+                    aria-label="Notes"
+                  >
                     Notes {user?.unreadNotesCount > 0 && `(${user.unreadNotesCount})`}
                   </Link>
-                  <Link to="/bookmarks" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/bookmarks')}`}>
+                  <Link
+                    to="/bookmarks"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/bookmarks')}`}
+                    aria-label="Bookmarks"
+                  >
                     Bookmarks {user?.unreadBookmarksCount > 0 && `(${user.unreadBookmarksCount})`}
                   </Link>
-                  <Link to="/forum" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/forum')}`}>Forum</Link> {/* New Forum link in mobile modal */}
-                  <Link to="/map" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/map')}`}>Map</Link>
-                  <Link to="/help" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/help')}`}>Help</Link>
-                  <button onClick={handleContinueReading} className="py-3 px-6 rounded-full text-green-600 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300">Continue Reading</button>
-                  <button onClick={handleLogout} className="py-3 px-6 rounded-full text-secondaryPink font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300">Logout</button>
+                  <Link
+                    to="/forum"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/forum')}`}
+                    aria-label="Forum"
+                  >
+                    Forum
+                  </Link>
+                  <Link
+                    to="/map"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/map')}`}
+                    aria-label="Map"
+                  >
+                    Map
+                  </Link>
+                  <Link
+                    to="/help"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/help')}`}
+                    aria-label="Help"
+                  >
+                    Help
+                  </Link>
+                  <button
+                    onClick={handleContinueReading}
+                    className="py-2 px-4 rounded-full text-green-600 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
+                    aria-label="Continue Reading"
+                  >
+                    Continue Reading
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="py-2 px-4 rounded-full text-secondaryPink font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
+                    aria-label="Logout"
+                  >
+                    Logout
+                  </button>
                 </>
               ) : (
                 <>
-                  <Link to="/login" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/login')}`}>Login</Link>
-                  <Link to="/signup" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/signup')}`}>Signup</Link>
-                  <Link to="/help" onClick={() => setIsModalOpen(false)} className={`py-3 px-6 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/help')}`}>Help</Link>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/login')}`}
+                    aria-label="Login"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/signup')}`}
+                    aria-label="Signup"
+                  >
+                    Signup
+                  </Link>
+                  <Link
+                    to="/help"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/help')}`}
+                    aria-label="Help"
+                  >
+                    Help
+                  </Link>
                 </>
               )}
             </div>
