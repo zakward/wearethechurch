@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { peopleData } from '../data/BibleTranslations/peopleData.jsx';
+import { peopleData } from '../data/BibleTranslations/peopleData.jsx'; // Changed from .jsx to .js
 
 const Persons = () => {
   const [searchQuery, setSearchQuery] = useState('');
