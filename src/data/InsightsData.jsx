@@ -236,7 +236,8 @@ export const insightsData = {
       description: 'Jesus taught to love your neighbor with a story of helping a stranger.',
       verseReferences: ['Luke 10:25-37'],
       summary: 'A Samaritan helped a hurt man when others didn’t, showing true kindness.',
-      analogy: 'Imagine seeing someone crash their bike. A doctor and a teacher pass by, but a kid from a rival school stops, helps them up, and gets them to a nurse. It’s like helping anyone in need, even if they’re different, like a fan of a rival team.'
+      analogy: 'Imagine seeing someone crash their bike. A doctor and a teacher pass by, but a kid from a rival school stops, helps them up, and gets them to a nurse. It’s like helping anyone in need, even if they’re different, like a fan of a rival team.',
+      context: 'Jews and Samaritans hated each other because Samaritans were considered unclean due to mixed ancestry. By making a Samaritan the hero, Jesus shocked his Jewish audience and showed that loving your neighbor means helping everyone, even enemies.'
     },
     {
       id: 'prodigal-son',
@@ -244,7 +245,8 @@ export const insightsData = {
       description: 'Jesus showed God’s forgiveness through a son who returned home.',
       verseReferences: ['Luke 15:11-32'],
       summary: 'A son wasted his money but came back sorry, and his father welcomed him lovingly.',
-      analogy: 'Picture a teen who takes their allowance, spends it on games, and ends up broke. They return home sorry, and their dad throws a welcome-back party, even if their sibling grumbles. It’s like a family forgiving you after a big mistake.'
+      analogy: 'Picture a teen who takes their allowance, spends it on games, and ends up broke. They return home sorry, and their dad throws a welcome-back party, even if their sibling grumbles. It’s like a family forgiving you after a big mistake.',
+      context: 'In Jewish culture, a son asking for his inheritance early was like wishing his father was dead. Jesus used this shocking story to show that God welcomes back sinners with open arms, no matter how badly they’ve messed up.'
     },
     {
       id: 'sower',
@@ -252,7 +254,8 @@ export const insightsData = {
       description: 'Jesus explained how people hear God’s word using a farmer’s seeds.',
       verseReferences: ['Matthew 13:1-23', 'Mark 4:1-20', 'Luke 8:4-15'],
       summary: 'Seeds fell on different soils, showing how hearts receive God’s message.',
-      analogy: 'Think of planting seeds in a garden. Some fall on a sidewalk and birds eat them, like ignoring advice. Some sprout in rocky dirt but die, like giving up on a new hobby. Some get choked by weeds, like distractions stopping homework. Good soil grows plants, like listening to God’s word and growing.'
+      analogy: 'Think of planting seeds in a garden. Some fall on a sidewalk and birds eat them, like ignoring advice. Some sprout in rocky dirt but die, like giving up on a new hobby. Some get choked by weeds, like distractions stopping homework. Good soil grows plants, like listening to God’s word and growing.',
+      context: 'Jesus taught this by the Sea of Galilee where farmers worked nearby. Everyone understood farming, so Jesus used what they knew to explain how people respond differently to God’s message based on their heart’s readiness.'
     },
     {
       id: 'mustard-seed',
@@ -260,7 +263,8 @@ export const insightsData = {
       description: 'Jesus compared God’s kingdom to a tiny seed that grows big.',
       verseReferences: ['Matthew 13:31-32', 'Mark 4:30-32', 'Luke 13:18-19'],
       summary: 'A small mustard seed grows into a big tree, like God’s kingdom spreading.',
-      analogy: 'Imagine starting a small lemonade stand that grows into a huge drink company with stores everywhere. It’s like one kind act, like helping a friend, spreading to inspire a whole school.'
+      analogy: 'Imagine starting a small lemonade stand that grows into a huge drink company with stores everywhere. It’s like one kind act, like helping a friend, spreading to inspire a whole school.',
+      context: 'Mustard seeds were the tiniest seeds farmers used, yet they grew into large bushes. Jesus was telling his small group of followers that God’s kingdom would start small but grow to fill the whole world.'
     },
     {
       id: 'talents',
@@ -268,7 +272,8 @@ export const insightsData = {
       description: 'Jesus taught to use God’s gifts wisely with a story of servants.',
       verseReferences: ['Matthew 25:14-30', 'Luke 19:11-27'],
       summary: 'A master gave servants money; those who used it well were rewarded.',
-      analogy: 'A coach gives players different amounts of practice time. Two players train hard and improve, but one skips practice. The coach praises the hard workers but benches the lazy one. It’s like using your talents, like drawing or sports, to get better.'
+      analogy: 'A coach gives players different amounts of practice time. Two players train hard and improve, but one skips practice. The coach praises the hard workers but benches the lazy one. It’s like using your talents, like drawing or sports, to get better.',
+      context: 'A talent was a huge amount of money—about 20 years of wages for a worker. Jesus wasn’t just talking about money, but about using whatever God gives us (abilities, opportunities, time) to serve Him instead of being lazy or afraid.'
     },
     {
       id: 'lost-sheep',
@@ -276,7 +281,8 @@ export const insightsData = {
       description: 'Jesus showed God’s love for the lost with a shepherd’s story.',
       verseReferences: ['Matthew 18:12-14', 'Luke 15:3-7'],
       summary: 'A shepherd left 99 sheep to find one lost sheep, showing God’s care.',
-      analogy: 'A teacher notices one student missing at recess and searches the playground, leaving the class to find them. When found, everyone cheers. It’s like searching for a lost toy until you find it, showing how much you care.'
+      analogy: 'A teacher notices one student missing at recess and searches the playground, leaving the class to find them. When found, everyone cheers. It’s like searching for a lost toy until you find it, showing how much you care.',
+      context: 'Jesus told this to religious leaders who criticized Him for eating with sinners. Shepherds were considered lowly in society, yet Jesus used one to show how much God values every single person, even those others reject.'
     },
     {
       id: 'wise-foolish-builders',
@@ -284,7 +290,8 @@ export const insightsData = {
       description: 'Jesus taught to obey His words by comparing two house builders.',
       verseReferences: ['Matthew 7:24-27', 'Luke 6:46-49'],
       summary: 'A wise man built on rock, and his house stood; a foolish man’s fell.',
-      analogy: 'Building a Lego tower on a sturdy table vs. a wobbly chair. A storm knocks the chair’s tower down, but the table’s stays. It’s like studying hard for a test (rock) vs. not preparing (sand).'
+      analogy: 'Building a Lego tower on a sturdy table vs. a wobbly chair. A storm knocks the chair’s tower down, but the table’s stays. It’s like studying hard for a test (rock) vs. not preparing (sand).',
+      context: 'In Israel, seasonal floods could destroy houses built on sandy riverbeds. Jesus ended the Sermon on the Mount with this warning: hearing His teachings isn’t enough—you must actually do what He says to have a strong foundation in life.'
     },
     {
       id: 'good-shepherd',
@@ -292,7 +299,8 @@ export const insightsData = {
       description: 'Jesus called Himself the Good Shepherd who cares for His sheep.',
       verseReferences: ['John 10:1-18'],
       summary: 'Jesus, the Good Shepherd, protects His sheep and gives His life for them.',
-      analogy: 'A dog owner knows each pet’s needs, feeds them, and protects them from danger. It’s like a coach who sacrifices time to train the team, showing care for everyone.'
+      analogy: 'A dog owner knows each pet’s needs, feeds them, and protects them from danger. It’s like a coach who sacrifices time to train the team, showing care for everyone.',
+      context: 'Shepherds risked their lives protecting sheep from wolves and thieves. When Jesus called Himself the Good Shepherd, He was saying He knows each of us personally and would die to save us—which He did on the cross.'
     },
     {
       id: 'unforgiving-servant',
@@ -300,7 +308,8 @@ export const insightsData = {
       description: 'Jesus taught to forgive others, as God forgives us.',
       verseReferences: ['Matthew 18:21-35'],
       summary: 'A servant was forgiven a big debt but wouldn’t forgive a small one.',
-      analogy: 'A kid borrows $100 from a parent and gets it forgiven, but then gets mad when a friend can’t repay $5. It’s like forgiving a sibling for breaking your toy because someone forgave you first.'
+      analogy: 'A kid borrows $100 from a parent and gets it forgiven, but then gets mad when a friend can’t repay $5. It’s like forgiving a sibling for breaking your toy because someone forgave you first.',
+      context: 'The first debt was millions of dollars in today’s money, while the second was just a few dollars. Jesus taught this after Peter asked if forgiving seven times was enough—God has forgiven us an impossible debt of sin, so we must forgive others.'
     },
     {
       id: 'wedding-banquet',
@@ -308,7 +317,8 @@ export const insightsData = {
       description: 'Jesus compared God’s kingdom to a king’s feast with many guests.',
       verseReferences: ['Matthew 22:1-14'],
       summary: 'A king invited all to a feast, but only those ready could join.',
-      analogy: 'A school throws a big party, but some kids ignore the invite, so others are invited instead. Only those dressed properly get in. It’s like being ready for a big event by preparing your heart.'
+      analogy: 'A school throws a big party, but some kids ignore the invite, so others are invited instead. Only those dressed properly get in. It’s like being ready for a big event by preparing your heart.',
+      context: 'In Jesus’ time, refusing a king’s banquet invitation was a serious insult. Jesus was warning religious leaders who rejected Him—God’s invitation to His kingdom is open to everyone, but those who refuse will miss out while unexpected people get in.'
     },
     {
       id: 'lost-coin',
@@ -316,7 +326,8 @@ export const insightsData = {
       description: 'Jesus showed God’s joy in finding the lost with a woman’s story.',
       verseReferences: ['Luke 15:8-10'],
       summary: 'A woman searched for a lost coin and celebrated when she found it.',
-      analogy: 'Losing a favorite earring and searching the house until you find it, then telling everyone. It’s like God celebrating when someone turns to Him.'
+      analogy: 'Losing a favorite earring and searching the house until you find it, then telling everyone. It’s like God celebrating when someone turns to Him.',
+      context: 'The woman lost one of ten silver coins, possibly part of her wedding dowry worn on a headband. It represented a significant portion of her wealth, showing how valuable each person is to God and how He celebrates when one sinner repents.'
     },
     {
       id: 'ten-virgins',
@@ -324,7 +335,8 @@ export const insightsData = {
       description: 'Jesus taught to be ready for His return with a story of bridesmaids.',
       verseReferences: ['Matthew 25:1-13'],
       summary: 'Five wise virgins had oil for their lamps; five foolish ones didn’t and missed the wedding.',
-      analogy: 'Ten friends wait for a concert, but only five bring tickets. The others miss out. It’s like packing snacks for a trip—be prepared for Jesus’ return.'
+      analogy: 'Ten friends wait for a concert, but only five bring tickets. The others miss out. It’s like packing snacks for a trip—be prepared for Jesus’ return.',
+      context: 'Jewish weddings happened when the groom arrived, often at unexpected times. Bridesmaids needed oil lamps to light the way in procession, and you couldn’t borrow oil. Jesus was saying to stay spiritually ready because He’ll return when we don’t expect it.'
     },
     {
       id: 'sheep-goats',
@@ -332,7 +344,8 @@ export const insightsData = {
       description: 'Jesus taught about judgment by separating kind people from selfish ones.',
       verseReferences: ['Matthew 25:31-46'],
       summary: 'Jesus separates those who helped others from those who didn’t, like sheep from goats.',
-      analogy: 'A teacher sorts students who shared supplies with those who didn’t. The sharers get rewards. It’s like helping a classmate with homework vs. ignoring them.'
+      analogy: 'A teacher sorts students who shared supplies with those who didn’t. The sharers get rewards. It’s like helping a classmate with homework vs. ignoring them.',
+      context: 'Shepherds separated sheep and goats at night because goats needed warmth. Jesus used this familiar image to show final judgment—how we treat “the least of these” (the poor, sick, imprisoned) shows how we treat Jesus Himself.'
     },
     {
       id: 'wheat-tares',
@@ -340,7 +353,8 @@ export const insightsData = {
       description: 'Jesus compared God’s kingdom to a field with good and bad plants.',
       verseReferences: ['Matthew 13:24-30', 'Matthew 13:36-43'],
       summary: 'A farmer let wheat and weeds grow together, separating them at harvest.',
-      analogy: 'A garden has flowers and weeds growing together. The gardener waits until the end to pull the weeds. It’s like letting good and bad choices show before judging.'
+      analogy: 'A garden has flowers and weeds growing together. The gardener waits until the end to pull the weeds. It’s like letting good and bad choices show before judging.',
+      context: 'Tares (darnel) looked exactly like wheat until harvest time, and their roots tangled together. Jesus explained that good and evil people will exist together until judgment day—it’s not our job to remove the “weeds” but God’s at the right time.'
     },
     {
       id: 'pearl-merchant',
@@ -348,7 +362,8 @@ export const insightsData = {
       description: 'Jesus compared God’s kingdom to a valuable pearl worth everything.',
       verseReferences: ['Matthew 13:45-46'],
       summary: 'A merchant sold all he had to buy a precious pearl.',
-      analogy: 'Selling your toys to buy a rare video game you really want. It’s like giving up small things for God’s amazing kingdom.'
+      analogy: 'Selling your toys to buy a rare video game you really want. It’s like giving up small things for God’s amazing kingdom.',
+      context: 'Pearls were extremely valuable in the ancient world, worth more than gold. Jesus was saying that knowing Him and entering His kingdom is worth giving up everything else—it’s the best treasure you could ever find.'
     },
     {
       id: 'hidden-treasure',
@@ -356,7 +371,8 @@ export const insightsData = {
       description: 'Jesus said God’s kingdom is like treasure worth giving up everything for.',
       verseReferences: ['Matthew 13:44'],
       summary: 'A man found buried treasure and sold everything to buy the field.',
-      analogy: 'Finding a rare comic book in a yard sale and selling your bike to buy it. It’s like valuing God’s kingdom above all else.'
+      analogy: 'Finding a rare comic book in a yard sale and selling your bike to buy it. It’s like valuing God’s kingdom above all else.',
+      context: 'People often hid valuables in fields during war or invasion. By Jewish law, if you found treasure in a field you didn’t own, it belonged to the landowner—so this man legally bought the field to get the treasure, showing how discovering God’s kingdom is worth any sacrifice.'
     },
     {
       id: 'workers-vineyard',
@@ -364,7 +380,8 @@ export const insightsData = {
       description: 'Jesus taught God’s fairness with workers paid equally.',
       verseReferences: ['Matthew 20:1-16'],
       summary: 'A landowner paid all workers the same, no matter when they started.',
-      analogy: 'A boss pays all helpers the same for a day’s work, whether they started early or late. It’s like God welcoming everyone to His kingdom equally.'
+      analogy: 'A boss pays all helpers the same for a day’s work, whether they started early or late. It’s like God welcoming everyone to His kingdom equally.',
+      context: 'Day laborers desperately needed work to feed their families. Jesus shocked people by showing God’s grace isn’t about how long you’ve served Him—whether you follow Him your whole life or turn to Him at the end, His gift of salvation is the same generous grace for all.'
     },
     {
       id: 'barren-fig-tree',
@@ -372,7 +389,8 @@ export const insightsData = {
       description: 'Jesus taught about second chances with a fruitless tree.',
       verseReferences: ['Luke 13:6-9'],
       summary: 'A tree didn’t bear fruit, but the gardener gave it another year.',
-      analogy: 'A coach gives a player one more season to improve instead of cutting them. It’s like God giving us time to grow.'
+      analogy: 'A coach gives a player one more season to improve instead of cutting them. It’s like God giving us time to grow.',
+      context: 'Fig trees took three years to produce fruit, and this one had been barren for three more. Jesus told this after people asked about tragedy—God is patient, giving us time to repent and bear spiritual fruit, but His patience has a limit.'
     },
     {
       id: 'two-sons',
@@ -380,7 +398,8 @@ export const insightsData = {
       description: 'Jesus taught about obedience with two sons and their father.',
       verseReferences: ['Matthew 21:28-32'],
       summary: 'One son refused but obeyed; the other promised but didn’t.',
-      analogy: 'One kid says no to chores but does them; another says yes but plays games. It’s like doing what’s right even if you don’t want to at first.'
+      analogy: 'One kid says no to chores but does them; another says yes but plays games. It’s like doing what’s right even if you don’t want to at first.',
+      context: 'Jesus told this to religious leaders who claimed to serve God but rejected Him. He was saying that tax collectors and sinners who seemed far from God but then repented were entering the kingdom ahead of religious people who talked a good game but didn’t truly obey.'
     },
     {
       id: 'net-fish',
@@ -388,7 +407,8 @@ export const insightsData = {
       description: 'Jesus compared God’s judgment to a net catching good and bad fish.',
       verseReferences: ['Matthew 13:47-50'],
       summary: 'Fishermen sorted good fish from bad, like God’s judgment.',
-      analogy: 'Sorting good apples from rotten ones at a market. It’s like God choosing those who follow Him at the end.'
+      analogy: 'Sorting good apples from rotten ones at a market. It’s like God choosing those who follow Him at the end.',
+      context: 'Fishermen on the Sea of Galilee used dragnets that caught everything. Jesus was teaching His disciples that the gospel message goes out to everyone, but at the end of time, angels will separate true believers from false ones—so make sure you’re genuine.'
     },
     {
       id: 'great-banquet',
@@ -396,7 +416,8 @@ export const insightsData = {
       description: 'Jesus showed God’s invitation to all with a feast story.',
       verseReferences: ['Luke 14:15-24'],
       summary: 'Guests refused a feast, so the host invited everyone else.',
-      analogy: 'Inviting friends to a birthday party, but they don’t come, so you invite neighbors. It’s like God inviting everyone to His kingdom.'
+      analogy: 'Inviting friends to a birthday party, but they don’t come, so you invite neighbors. It’s like God inviting everyone to His kingdom.',
+      context: 'Wealthy people sent two invitations—first to announce the feast, then when food was ready. Refusing the second was a major insult. Jesus showed that religious people were refusing God’s invitation to the kingdom, so He was inviting outcasts, gentiles, and sinners instead.'
     },
     {
       id: 'rich-fool',
@@ -404,7 +425,8 @@ export const insightsData = {
       description: 'Jesus warned against greed with a rich man’s story.',
       verseReferences: ['Luke 12:16-21'],
       summary: 'A rich man stored wealth but died, showing life isn’t about stuff.',
-      analogy: 'A kid saves all their candy but never shares or enjoys it, then it goes bad. It’s like focusing on God, not just collecting things.'
+      analogy: 'A kid saves all their candy but never shares or enjoys it, then it goes bad. It’s like focusing on God, not just collecting things.',
+      context: 'Jesus told this after a man asked Him to settle an inheritance dispute. In a culture where wealth meant security, He warned that true life comes from being rich in faith, not hoarding possessions, because you can’t take them with you when you die.'
     },
     {
       id: 'pharisee-tax-collector',
@@ -412,7 +434,8 @@ export const insightsData = {
       description: 'Jesus taught humility in prayer with two men’s story.',
       verseReferences: ['Luke 18:9-14'],
       summary: 'A proud Pharisee boasted; a humble tax collector was forgiven.',
-      analogy: 'A student brags about grades while another quietly asks for help. The humble one gets praise. It’s like praying with a humble heart.'
+      analogy: 'A student brags about grades while another quietly asks for help. The humble one gets praise. It’s like praying with a humble heart.',
+      context: 'Pharisees were respected religious teachers, while tax collectors were despised for working with Romans and cheating people. Jesus told this to those who trusted in their own goodness, showing that God accepts humble, repentant hearts over proud, self-righteous ones.'
     },
     {
       id: 'persistent-widow',
@@ -420,7 +443,8 @@ export const insightsData = {
       description: 'Jesus taught to keep praying with a widow’s story.',
       verseReferences: ['Luke 18:1-8'],
       summary: 'A widow kept asking a judge for justice until he helped.',
-      analogy: 'A kid keeps asking their parent for a new book until they get it. It’s like praying to God without giving up.'
+      analogy: 'A kid keeps asking their parent for a new book until they get it. It’s like praying to God without giving up.',
+      context: 'Widows in Jesus’ time had little power and depended on judges for justice, but this judge didn’t care. Jesus used this story to encourage His disciples to pray persistently, promising that God, unlike the unjust judge, will answer His people quickly.'
     },
     {
       id: 'friend-midnight',
@@ -428,7 +452,8 @@ export const insightsData = {
       description: 'Jesus encouraged persistent prayer with a friend’s request.',
       verseReferences: ['Luke 11:5-13'],
       summary: 'A man asked a friend for bread at night and got it by persisting.',
-      analogy: 'Knocking on a friend’s door for help with homework late at night until they answer. It’s like asking God for help and not stopping.'
+      analogy: 'Knocking on a friend’s door for help with homework late at night until they answer. It’s like asking God for help and not stopping.',
+      context: 'In Jewish villages, hospitality was a big deal, and running out of bread for a guest was shameful. Jesus told this after teaching the Lord’s Prayer, showing that if a grumpy friend will help if you keep asking, God will definitely answer persistent prayers.'
     },
     {
       id: 'sermon-mount',
@@ -436,7 +461,8 @@ export const insightsData = {
       description: 'Jesus taught how to live for God’s kingdom on a hill.',
       verseReferences: ['Matthew 5:1-7:29'],
       summary: 'Jesus taught about kindness, prayer, and trusting God, like the Lord’s Prayer.',
-      analogy: 'A coach gives a big talk to the team about playing fair, working hard, and supporting each other. It’s like Jesus teaching us how to live well.'
+      analogy: 'A coach gives a big talk to the team about playing fair, working hard, and supporting each other. It’s like Jesus teaching us how to live well.',
+      context: 'Jesus spoke to crowds on a hillside, like a teacher addressing students. His teachings, like the Beatitudes and Lord’s Prayer, challenged Jewish laws by focusing on heart attitudes—love, humility, and trust—over just following rules.'
     },
     {
       id: 'beatitudes',
@@ -444,7 +470,8 @@ export const insightsData = {
       description: 'Jesus shared blessings for those who follow God’s ways.',
       verseReferences: ['Matthew 5:3-12', 'Luke 6:20-23'],
       summary: 'Jesus blessed the poor, meek, and merciful, promising God’s kingdom.',
-      analogy: 'A teacher praises kids who share, stay kind, or help others, promising rewards. It’s like God blessing those who live humbly.'
+      analogy: 'A teacher praises kids who share, stay kind, or help others, promising rewards. It’s like God blessing those who live humbly.',
+      context: 'Jesus gave these blessings at the start of the Sermon on the Mount, speaking to a crowd including poor and outcast people. He flipped society’s values, saying God blesses those who seem weak or unimportant, like the poor or persecuted, not the rich and powerful.'
     },
     {
       id: 'lords-prayer',
@@ -452,7 +479,8 @@ export const insightsData = {
       description: 'Jesus taught His disciples how to pray to God.',
       verseReferences: ['Matthew 6:9-13', 'Luke 11:2-4'],
       summary: 'Jesus gave a prayer asking for God’s will, daily needs, and forgiveness.',
-      analogy: 'A parent teaches a kid a bedtime prayer to thank, ask for help, and say sorry. It’s like Jesus showing us how to talk to God.'
+      analogy: 'A parent teaches a kid a bedtime prayer to thank, ask for help, and say sorry. It’s like Jesus showing us how to talk to God.',
+      context: 'Jesus taught this prayer when a disciple asked, “Lord, teach us to pray.” Unlike long, showy prayers of religious leaders, Jesus gave a simple, heartfelt prayer that anyone could use to ask for God’s guidance, provision, and forgiveness.'
     },
     {
       id: 'great-commandment',
@@ -460,7 +488,8 @@ export const insightsData = {
       description: 'Jesus said to love God and others with all your heart.',
       verseReferences: ['Matthew 22:34-40', 'Mark 12:28-34'],
       summary: 'The greatest rule is to love God fully and love your neighbor.',
-      analogy: 'A team captain says the most important rules are to respect the coach and help teammates. It’s like loving God and others first.'
+      analogy: 'A team captain says the most important rules are to respect the coach and help teammates. It’s like loving God and others first.',
+      context: 'A religious lawyer asked Jesus which commandment was greatest, trying to trap Him. Jesus quoted the Old Testament (Deuteronomy 6:5, Leviticus 19:18), summing up all God’s laws into two: love God with everything and love your neighbor as yourself.'
     },
     {
       id: 'golden-rule',
@@ -468,7 +497,8 @@ export const insightsData = {
       description: 'Jesus taught to treat others as you want to be treated.',
       verseReferences: ['Matthew 7:12', 'Luke 6:31'],
       summary: 'Do to others what you want them to do to you, Jesus said.',
-      analogy: 'Sharing your snacks because you’d want a friend to share with you. It’s like treating people kindly, just like you want kindness.'
+      analogy: 'Sharing your snacks because you’d want a friend to share with you. It’s like treating people kindly, just like you want kindness.',
+      context: 'In the Sermon on the Mount, Jesus gave this rule as a simple way to live out God’s law. It was a familiar idea in Jewish teaching, but Jesus made it positive—don’t just avoid harming others, actively do good to them, like you’d want.'
     },
     {
       id: 'love-enemies',
@@ -476,7 +506,8 @@ export const insightsData = {
       description: 'Jesus taught to love and pray for those who are mean to you.',
       verseReferences: ['Matthew 5:43-48', 'Luke 6:27-28'],
       summary: 'Love your enemies and pray for them, showing God’s love.',
-      analogy: 'Being nice to a kid who teases you at school, like sharing a pencil. It’s like showing kindness even when someone isn’t nice back.'
+      analogy: 'Being nice to a kid who teases you at school, like sharing a pencil. It’s like showing kindness even when someone isn’t nice back.',
+      context: 'In the Sermon on the Mount, Jesus challenged the common teaching, “Love your neighbor, hate your enemy.” He said to love enemies, like Romans who oppressed Jews, because God loves everyone, even sinners, and we should show His kind of love.'
     },
     {
       id: 'do-not-worry',
@@ -484,7 +515,8 @@ export const insightsData = {
       description: 'Jesus taught to trust God instead of worrying about needs.',
       verseReferences: ['Matthew 6:25-34', 'Luke 12:22-31'],
       summary: 'God cares for birds and flowers, so trust Him for your needs.',
-      analogy: 'Not stressing about lunch because your parents always pack it. It’s like trusting God to take care of what you need.'
+      analogy: 'Not stressing about lunch because your parents always pack it. It’s like trusting God to take care of what you need.',
+      context: 'In the Sermon on the Mount, Jesus spoke to poor people worried about food and clothes. He pointed to birds and flowers, which God provides for, to show that God cares even more for people, so they should trust Him instead of worrying.'
     },
     {
       id: 'judge-not',
@@ -492,7 +524,8 @@ export const insightsData = {
       description: 'Jesus taught not to judge others but to look at your own faults.',
       verseReferences: ['Matthew 7:1-5', 'Luke 6:37-42'],
       summary: 'Don’t judge others; fix your own mistakes first.',
-      analogy: 'Telling a friend they’re messy while your room is a mess. It’s like cleaning your own space before pointing out others’ faults.'
+      analogy: 'Telling a friend they’re messy while your room is a mess. It’s like cleaning your own space before pointing out others’ faults.',
+      context: 'In the Sermon on the Mount, Jesus warned against the hypocrisy of religious leaders who judged others while ignoring their own sins. He used humor—a plank in your eye vs. a speck in someone else’s—to say focus on your own faults before criticizing others.'
     }
   ]
 };
