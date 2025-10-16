@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
 import { BibleContext } from '../BibleContext.jsx';
@@ -9,18 +9,18 @@ const Home = () => {
 
   const popularVerses = [
     { reference: 'John 3:16', text: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.', translation: 'NIV' },
-    { reference: 'Jeremiah 29:11', text: 'For I know the plans I have for you,” declares the LORD, “plans to prosper you and not to harm you, plans to give you hope and a future.', translation: 'NIV' },
+    { reference: 'Jeremiah 29:11', text: 'For I know the plans I have for you," declares the LORD, "plans to prosper you and not to harm you, plans to give you hope and a future.', translation: 'NIV' },
     { reference: 'Romans 8:28', text: 'And we know that in all things God works for the good of those who love him, who have been called according to his purpose.', translation: 'NIV' },
     { reference: 'Philippians 4:13', text: 'I can do everything through him who gives me strength.', translation: 'NIV' },
     { reference: 'Genesis 1:1', text: 'In the beginning God created the heavens and the earth.', translation: 'NIV' },
     { reference: 'Proverbs 3:5', text: 'Trust in the LORD with all your heart and lean not on your own understanding.', translation: 'NIV' },
     { reference: 'Proverbs 3:6', text: 'In all your ways acknowledge him, and he will make your paths straight.', translation: 'NIV' },
-    { reference: 'Romans 12:2', text: 'Do not conform any longer to the pattern of this world, but be transformed by the renewing of your mind. Then you will be able to test and approve what God’s will is—his good, pleasing and perfect will.', translation: 'NIV' },
+    { reference: 'Romans 12:2', text: 'Do not conform any longer to the pattern of this world, but be transformed by the renewing of your mind. Then you will be able to test and approve what God"s will is—his good, pleasing and perfect will.', translation: 'NIV' },
     { reference: 'Philippians 4:6', text: 'Do not be anxious about anything, but in everything, by prayer and petition, with thanksgiving, present your requests to God.', translation: 'NIV' },
     { reference: 'Matthew 28:19', text: 'Therefore go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit.', translation: 'NIV' },
     { reference: '1 Peter 5:7', text: 'Cast all your anxiety on him because he cares for you.', translation: 'NIV' },
     { reference: 'Philippians 4:7', text: 'And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.', translation: 'NIV' },
-    { reference: '2 Corinthians 12:9', text: 'But he said to me, “My grace is sufficient for you, for my power is made perfect in weakness.” Therefore I will boast all the more gladly about my weaknesses, so that Christ’s power may rest on me.', translation: 'NIV' },
+    { reference: '2 Corinthians 12:9', text: 'But he said to me, "My grace is sufficient for you, for my power is made perfect in weakness." Therefore I will boast all the more gladly about my weaknesses, so that Chris"s power may rest on me.', translation: 'NIV' },
     { reference: '2 Timothy 3:16', text: 'All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness.', translation: 'NIV' },
     { reference: '1 Peter 3:15', text: 'But in your hearts revere Christ as Lord. Always be prepared to give an answer to everyone who asks you to give the reason for the hope that you have. But do this with gentleness and respect.', translation: 'NIV' },
     { reference: 'Hebrews 11:6', text: 'And without faith it is impossible to please God, because anyone who comes to him must believe that he exists and that he rewards those who earnestly seek him.', translation: 'NIV' },
@@ -44,6 +44,92 @@ const Home = () => {
   const verseOfTheDay = allVerses[dayOfYear % allVerses.length] || popularVerses[0];
 
   const progress = getOverallProgress();
+
+  // If user is not logged in, show a welcome message prompting them to log in
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <section className="text-center mb-12 bg-primaryBlue p-8 rounded-3xl shadow-xl md:p-12 lg:p-16 border-4 border-white">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 text-white drop-shadow-md">
+            Welcome to Bible Study App!
+          </h1>
+          <p className="text-lg sm:text-xl lg:text-2xl mb-6 text-white/90">
+            Please log in or sign up to start your Bible study journey.
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Link
+              to="/login"
+              className="inline-block bg-primaryYellow text-textGray font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:rotate-1 border-4 border-white"
+            >
+              Log In
+            </Link>
+            <Link
+              to="/signup"
+              className="inline-block bg-white text-primaryBlue font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:rotate-1 border-4 border-primaryBlue"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </section>
+
+        {/* Featured Verse Section - accessible without login */}
+        <section className="text-center mb-12 bg-bgLightBlue p-8 rounded-3xl shadow-xl border-4 border-white">
+          <h2 className="text-3xl font-bold mb-6 text-primaryBlue">Featured Verse of the Day</h2>
+          <blockquote className="text-xl italic text-textGray max-w-2xl mx-auto">
+            "{verseOfTheDay.text}" — {verseOfTheDay.reference} ({verseOfTheDay.translation})
+          </blockquote>
+          <p className="mt-4 text-lg text-secondaryPink">Reflect on this and add your thoughts!</p>
+        </section>
+
+        {/* Cool Resources Section - accessible without login */}
+        <section className="text-center mb-12 bg-bgLightBlue p-8 rounded-3xl shadow-xl border-4 border-white">
+          <h2 className="text-3xl font-bold mb-6 text-primaryBlue">Cool Resources</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Can I Trust The Bible? */}
+            <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
+              <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Can I Trust The Bible?</h3>
+              <a href="https://bible.apologeticscanada.com/" target="_blank" rel="noopener noreferrer">
+                <img src="https://i.ytimg.com/vi/QhVPBNBAGY0/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAjKogoyGRvmShLGEr7f3odCpO_0A" alt="Can I Trust The Bible?" className="w-full h-48 object-cover rounded-2xl mb-4" />
+                <p className="text-textGray hover:text-funPink hover:underline">Explore the reliability of the Bible</p>
+              </a>
+            </div>
+            {/* The Shawn Ryan Show */}
+            <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
+              <h3 className="text-2xl font-bold mb-4 text-primaryBlue">The Shawn Ryan Show</h3>
+              <a href="https://www.youtube.com/@ShawnRyanShow" target="_blank" rel="noopener noreferrer">
+                <img src="https://shawnryanshow.com/cdn/shop/files/Shawn-Ryan-Show-Website-Cover_189fbb8d-d19b-4d72-9657-6e9a9d482e22.jpg?v=1649170862&width=1500" alt="The Shawn Ryan Show" className="w-full h-48 object-cover rounded-2xl mb-4" />
+                <p className="text-textGray hover:text-funPink hover:underline">Watch interviews and stories</p>
+              </a>
+            </div>
+            {/* Jesus Calling */}
+            <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
+              <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Jesus Calling</h3>
+              <a href="https://www.jesuscalling.com/books/jesus-calling/" target="_blank" rel="noopener noreferrer">
+                <img src="https://s32213.pcdn.co/wp-content/uploads/2015/08/jc_book.png" alt="Jesus Calling" className="w-full h-48 object-cover rounded-2xl mb-4" />
+                <p className="text-textGray hover:text-funPink hover:underline">A daily devotional</p>
+              </a>
+            </div>
+            {/* Got Questions? */}
+            <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
+              <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Got Questions?</h3>
+              <a href="https://www.gotquestions.org/questions_Bible.html" target="_blank" rel="noopener noreferrer">
+                <img src="https://redeeminggod.com/wp-content/uploads/2014/05/bible-questions.jpg" alt="Got Questions?" className="w-full h-48 object-cover rounded-2xl mb-4" />
+                <p className="text-textGray hover:text-funPink hover:underline">Answers to Bible questions</p>
+              </a>
+            </div>
+            {/* Case for Christ */}
+            <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
+              <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Case for Christ</h3>
+              <a href="https://www.amazon.com/Case-Christ-Journalists-Personal-Investigation/dp/0310350034" target="_blank" rel="noopener noreferrer">
+                <img src="https://m.media-amazon.com/images/I/71Utqy+1v1L._UF1000,1000_QL80_.jpg" alt="Case for Christ" className="w-full h-48 object-cover rounded-2xl mb-4" />
+                <p className="text-textGray hover:text-funPink hover:underline">Investigate the evidence for Christ</p>
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">

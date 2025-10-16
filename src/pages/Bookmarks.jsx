@@ -1,11 +1,11 @@
-
 import React, { useContext, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
 
 const Bookmarks = () => {
   const { user, deleteBookmark, resetUnreadBookmarks } = useContext(AuthContext);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user && user.unreadBookmarksCount > 0) {
@@ -18,7 +18,7 @@ const Bookmarks = () => {
         resetUnreadBookmarks();
       }
     };
-  }, [user, resetUnreadBookmarks, location.pathname]); // Include location.pathname to trigger on navigation
+  }, [user, resetUnreadBookmarks, location.pathname]);
 
   if (!user) {
     return (
@@ -31,7 +31,16 @@ const Bookmarks = () => {
   const bookmarks = user.bookmarks || [];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="relative container mx-auto px-4 py-8 max-w-7xl">
+      {/* Back Arrow */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
+        aria-label="Back to Home"
+      >
+        🡨
+      </button>
+
       <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">My Bookmarks</h1>
       {bookmarks.length === 0 ? (
         <p className="text-center text-textGray">No bookmarks saved yet.</p>
@@ -42,6 +51,7 @@ const Bookmarks = () => {
               <Link
                 to={`/bible/${bookmark.book}/${bookmark.chapter}#verse-${bookmark.verse}`}
                 className="text-lg font-bold text-funPink hover:underline"
+                aria-label={`Read ${bookmark.book} ${bookmark.chapter}:${bookmark.verse}`}
               >
                 {bookmark.book} {bookmark.chapter}:{bookmark.verse} ({bookmark.translation})
               </Link>
@@ -52,6 +62,7 @@ const Bookmarks = () => {
               <button
                 onClick={() => deleteBookmark(index)}
                 className="mt-2 bg-secondaryPink text-white py-1 px-3 rounded-full hover:bg-pink-600 transition-all duration-300"
+                aria-label={`Delete bookmark for ${bookmark.book} ${bookmark.chapter}:${bookmark.verse}`}
               >
                 Delete Bookmark
               </button>

@@ -101,6 +101,13 @@ const Nav = () => {
                 Forum
               </Link>
               <Link
+                to="/insights"
+                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/insights')} transition-all duration-300 hover:scale-105`}
+                aria-label="Insights"
+              >
+                Insights
+              </Link>
+              <Link
                 to="/map"
                 className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/map')} transition-all duration-300 hover:scale-105`}
                 aria-label="Map"
@@ -234,6 +241,14 @@ const Nav = () => {
                     aria-label="Forum"
                   >
                     Forum
+                  </Link>
+                  <Link
+                    to="/insights"
+                    onClick={() => setIsModalOpen(false)}
+                    className={`py-2 px-4 rounded-full text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/insights')}`}
+                    aria-label="Insights"
+                  >
+                    Insights
                   </Link>
                   <Link
                     to="/map"

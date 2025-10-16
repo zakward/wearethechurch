@@ -12,7 +12,6 @@ import React, { createContext, useState, useEffect } from 'react';
 //   // ... more books as keys
 // }
 import nivBibleData from './data/BibleTranslations/NIV/NIV_bible.json';
-
 import kjvBibleData from './data/BibleTranslations/KJV/KJV_bible.json';
 
 export const BibleContext = createContext();
@@ -79,7 +78,19 @@ export const BibleProvider = ({ children }) => {
   };
 
   return (
-    <BibleContext.Provider value={{ currentBibleData, books, bookmarks, addBookmark, completed, markCompleted, goals, addGoal, getOverallProgress, currentTranslation, setCurrentTranslation }}>
+    <BibleContext.Provider value={{ 
+      currentBibleData, 
+      books, 
+      bookmarks, 
+      addBookmark, 
+      completed, 
+      markCompleted, 
+      goals, 
+      addGoal, 
+      getOverallProgress, 
+      currentTranslation, 
+      setCurrentTranslation 
+    }}>
       {children}
     </BibleContext.Provider>
   );

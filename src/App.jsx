@@ -1,72 +1,52 @@
-
-import React, { useContext, useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AuthContext, AuthProvider } from './AuthContext.jsx';
-import { BibleProvider } from './BibleContext.jsx';
-import { ThemeProvider } from './ThemeContext.jsx';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Nav from './components/Nav.jsx';
+import Home from './pages/Home.jsx';
+import BibleReader from './pages/BibleReader.jsx';
+import BibleBooks from './pages/BibleBooks.jsx'; // Add this import
+import Insights from './pages/Insights.jsx';
+import Notes from './pages/Notes.jsx';
+import Bookmarks from './pages/Bookmarks.jsx';
+import SavedVerses from './pages/SavedVerses.jsx';
+import Forum from './pages/Forum.jsx';
+import Religions from './pages/Religions.jsx';
+import ReligionDetail from './pages/ReligionDetail.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
-import Home from './pages/Home.jsx';
-import BibleBooks from './pages/BibleBooks.jsx';
-import BibleReader from './pages/BibleReader.jsx';
-import Persons from './pages/Persons.jsx';
-import PersonDetail from './pages/PersonDetail.jsx';
-import Map from './pages/Map.jsx';
-import SavedVerses from './pages/SavedVerses.jsx';
-import Bookmarks from './pages/Bookmarks.jsx';
-import Notes from './pages/Notes.jsx';
-import Forum from './pages/Forum.jsx'; // New import for Forum page
 import Help from './pages/Help.jsx';
-import Nav from './components/Nav.jsx';
+import { BibleProvider } from './BibleContext.jsx';
+import { AuthProvider } from './AuthContext.jsx';
+import { ThemeProvider } from './ThemeContext.jsx';
 
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
-  if (loading) {
-    return <div className="text-center py-8">Loading...</div>;
-  }
-  return user ? children : <Navigate to="/login" />;
-};
-
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
-  return null;
-};
-
-function App() {
+const App = () => {
   return (
     <AuthProvider>
       <BibleProvider>
         <ThemeProvider>
-          <ScrollToTop />
-          <div className="min-h-screen bg-bgLightBlue dark:bg-gray-900">
+          <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
             <Nav />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 lg:py-12">
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-                <Route path="/bible" element={<ProtectedRoute><BibleBooks /></ProtectedRoute>} />
-                <Route path="/bible/:book/:chapter?" element={<ProtectedRoute><BibleReader /></ProtectedRoute>} />
-                <Route path="/persons" element={<ProtectedRoute><Persons /></ProtectedRoute>} />
-                <Route path="/persons/:name" element={<ProtectedRoute><PersonDetail /></ProtectedRoute>} />
-                <Route path="/saved-verses" element={<ProtectedRoute><SavedVerses /></ProtectedRoute>} />
-                <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
-                <Route path="/notes" element={<ProtectedRoute><Notes /></ProtectedRoute>} />
-                <Route path="/forum" element={<ProtectedRoute><Forum /></ProtectedRoute>} /> {/* New Forum route */}
-                <Route path="/map" element={<ProtectedRoute><Map /></ProtectedRoute>} />
-                <Route path="/help" element={<Help />} />
-              </Routes>
-            </div>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/bible" element={<BibleBooks />} />
+              <Route path="/bible/:book" element={<BibleReader />} />
+              <Route path="/bible/:book/:chapter" element={<BibleReader />} />
+              <Route path="/insights" element={<Insights />} />
+              <Route path="/notes" element={<Notes />} />
+              <Route path="/bookmarks" element={<Bookmarks />} />
+              <Route path="/saved-verses" element={<SavedVerses />} />
+              <Route path="/forum" element={<Forum />} />
+              <Route path="/religions" element={<Religions />} />
+              <Route path="/religions/:id" element={<ReligionDetail />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/help" element={<Help />} />
+              <Route path="*" element={<p className="text-center text-red-500 p-8">Page not found.</p>} />
+            </Routes>
           </div>
         </ThemeProvider>
       </BibleProvider>
     </AuthProvider>
   );
-}
+};
 
 export default App;

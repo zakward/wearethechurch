@@ -1,11 +1,12 @@
-
 import React, { useContext, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
 
 const categories = ['General Discussion', 'Questions', 'Testimonies', 'Bible Study', 'Prayer Requests'];
 
 const Forum = () => {
   const { user, forumPosts, addForumPost, addComment, deleteForumPost, deleteComment } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState(categories[0]);
@@ -14,7 +15,7 @@ const Forum = () => {
   const [filterUser, setFilterUser] = useState('all');
   const [expandedPosts, setExpandedPosts] = useState({});
   const [commentText, setCommentText] = useState({});
-  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false); // Toggle state for form
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
   if (!user) {
     return (
@@ -38,7 +39,7 @@ const Forum = () => {
     addForumPost(postObj);
     setTitle('');
     setContent('');
-    setIsCreatePostOpen(false); // Close form after posting
+    setIsCreatePostOpen(false);
   };
 
   const toggleExpandPost = (postId) => {
@@ -66,10 +67,19 @@ const Forum = () => {
         post.content.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesTopic && matchesUser && matchesSearch;
     })
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort by newest first
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="relative container mx-auto px-4 py-8 max-w-7xl">
+      {/* Back Arrow */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
+        aria-label="Back to Home"
+      >
+        🡨
+      </button>
+
       <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">Bible Forum</h1>
 
       {/* Toggle Button for Create Post Form */}

@@ -1,26 +1,66 @@
-import React, { useContext, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+
+import React, { useContext, useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BibleContext } from '../BibleContext.jsx';
 import { AuthContext } from '../AuthContext.jsx';
 import { ThemeContext } from '../ThemeContext.jsx';
+import { insightsData } from '../data/InsightsData.jsx';
 
 const BibleReader = () => {
   const { book, chapter } = useParams();
   const { currentBibleData, markCompleted, currentTranslation, setCurrentTranslation } = useContext(BibleContext);
   const { user, saveVerse, highlightVerse, unsaveVerse, addBookmark, unbookmark, addNote } = useContext(AuthContext);
   const { fontSize, setFontSize, fontFamily, setFontFamily } = useContext(ThemeContext);
+  const navigate = useNavigate();
   const [mode, setMode] = useState('light');
   const [activeVerse, setActiveVerse] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(book || '');
+  const [selectedChapter, setSelectedChapter] = useState(chapter || '');
+  const [selectedVerse, setSelectedVerse] = useState('');
+  const [error, setError] = useState(null);
 
-  const bookData = currentBibleData[book];
-  if (!bookData) return <p className="text-center text-red-500 dark:text-red-300">Book not found.</p>;
+  // Validate book and chapter
+  const bookData = currentBibleData && selectedBook in currentBibleData ? currentBibleData[selectedBook] : null;
+  const chapterData = bookData && selectedChapter in bookData ? bookData[selectedChapter] : null;
+
+  // Sync selectedBook and selectedChapter with URL params
+  useEffect(() => {
+    if (book && currentBibleData[book]) {
+      setSelectedBook(book);
+      setSelectedChapter(chapter || '');
+      setSelectedVerse('');
+      setError(null);
+    } else {
+      setError('Invalid book or chapter selected.');
+    }
+  }, [book, chapter, currentBibleData]);
+
+  if (!currentBibleData || Object.keys(currentBibleData).length === 0) {
+    return <p className="text-center text-red-500 dark:text-red-300">Loading Bible data...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500 dark:text-red-300">{error}</p>;
+  }
+
+  if (!bookData) {
+    return <p className="text-center text-red-500 dark:text-red-300">Book not found.</p>;
+  }
 
   if (!chapter) {
     const chapters = Object.keys(bookData).sort((a, b) => Number(a) - Number(b));
     return (
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border-4 border-white">
+      <div className="relative bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border-4 border-white">
+        {/* Back Arrow */}
+        <button
+          onClick={() => navigate('/')}
+          className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
+          aria-label="Back to Home"
+        >
+          🡨
+        </button>
         <h1 className="text-4xl font-bold mb-6 text-primaryBlue dark:text-white text-center">{book}</h1>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
           {chapters.map((ch) => (
@@ -28,6 +68,7 @@ const BibleReader = () => {
               key={ch}
               to={`/bible/${book}/${ch}`}
               className="bg-bgLightBlue text-white dark:bg-gray-700 p-4 rounded-2xl text-center hover:bg-primaryBlue hover:text-white transition-all duration-300"
+              aria-label={`Read ${book} Chapter ${ch}`}
             >
               Chapter {ch}
             </Link>
@@ -37,10 +78,32 @@ const BibleReader = () => {
     );
   }
 
-  const chapterData = bookData[chapter];
-  if (!chapterData) return <p className="text-center text-red-500 dark:text-red-300">Chapter not found.</p>;
+  if (!chapterData) {
+    return <p className="text-center text-red-500 dark:text-red-300">Chapter not found.</p>;
+  }
 
   const verses = Object.keys(chapterData).sort((a, b) => Number(a) - Number(b));
+
+  // Map verses to insights for inline links
+  const verseInsights = {};
+  const addInsightsToVerses = (section, tab) => {
+    section.forEach((item) => {
+      item.verseReferences.forEach((ref) => {
+        const [refBook, chapterVerse] = ref.split(' ');
+        const [refChapter, refVerse] = chapterVerse.includes(':') ? chapterVerse.split(':') : [chapterVerse, null];
+        if (refBook === book && refChapter === chapter) {
+          const verseRange = refVerse ? refVerse.split('-').map(Number) : [Number(refVerse)];
+          verseRange.forEach((v) => {
+            if (!verseInsights[v]) verseInsights[v] = [];
+            verseInsights[v].push({ id: item.id, title: item.title, tab });
+          });
+        }
+      });
+    });
+  };
+  addInsightsToVerses(insightsData.parablesTeachings, 'parablesTeachings');
+  addInsightsToVerses(insightsData.historicalEvents, 'historicalEvents');
+  addInsightsToVerses(insightsData.lineages, 'lineages');
 
   const sizeClass = fontSize === 'base' ? 'text-base' : fontSize === 'lg' ? 'text-lg' : 'text-xl';
   const familyClass = fontFamily === 'friendly' ? 'font-friendly' : fontFamily === 'serif' ? 'font-serif' : 'font-sans';
@@ -51,6 +114,8 @@ const BibleReader = () => {
   let savedIndicatorColor = 'text-blue-500';
   let bookmarkIndicatorColor = 'text-red-500';
   let noteIndicatorColor = 'text-green-500';
+  let insightIndicatorColor = 'text-purple-500';
+  let keyTextColor = 'text-primaryBlue';
   if (mode === 'dark') {
     modeClass = 'bg-gray-800 text-gray-200';
     dropdownClass = 'bg-gray-800 text-gray-200 shadow-lg shadow-gray-900/50';
@@ -58,6 +123,8 @@ const BibleReader = () => {
     savedIndicatorColor = 'text-blue-300';
     bookmarkIndicatorColor = 'text-red-300';
     noteIndicatorColor = 'text-green-300';
+    insightIndicatorColor = 'text-purple-300';
+    keyTextColor = 'text-white';
   } else if (mode === 'sepia') {
     modeClass = 'bg-[#FBF0D9] text-[#5F4B32]';
     dropdownClass = 'bg-[#FBF0D9] text-[#5F4B32] shadow-md shadow-[#5F4B32]/20';
@@ -65,6 +132,8 @@ const BibleReader = () => {
     savedIndicatorColor = 'text-[#3F2B1E]';
     bookmarkIndicatorColor = 'text-[#8B4513]';
     noteIndicatorColor = 'text-[#2E8B57]';
+    insightIndicatorColor = 'text-[#4B0082]';
+    keyTextColor = 'text-[#5F4B32]';
   } else if (mode === 'high-contrast') {
     modeClass = 'bg-black text-yellow-300';
     dropdownClass = 'bg-black text-yellow-300 shadow-md shadow-white/10';
@@ -72,11 +141,13 @@ const BibleReader = () => {
     savedIndicatorColor = 'text-yellow-500';
     bookmarkIndicatorColor = 'text-red-400';
     noteIndicatorColor = 'text-green-400';
+    insightIndicatorColor = 'text-purple-400';
+    keyTextColor = 'text-yellow-300';
   }
 
   const handleSave = (v) => {
     const text = chapterData[v];
-    const verseObj = { book, chapter: Number(chapter), verse: Number(v), text, translation: currentTranslation };
+    const verseObj = { book, chapter: Number(chapter), verse: Number(v), text, translation: currentTranslation, timestamp: new Date().toISOString() };
     saveVerse(verseObj);
     alert('Verse saved!');
     setActiveVerse(null);
@@ -103,7 +174,7 @@ const BibleReader = () => {
 
   const handleBookmark = (v) => {
     const text = chapterData[v];
-    const obj = { book, chapter: Number(chapter), verse: Number(v), text, translation: currentTranslation };
+    const obj = { book, chapter: Number(chapter), verse: Number(v), text, translation: currentTranslation, timestamp: new Date().toISOString() };
     const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(chapter) && b.verse === Number(v)) || false;
     if (isBookmarked) {
       unbookmark(book, Number(chapter), Number(v));
@@ -116,7 +187,6 @@ const BibleReader = () => {
   };
 
   const handleOpenNoteModal = (v) => {
-    // Pre-populate note text if it exists
     const existingNote = user?.notes?.find(n => n.book === book && n.chapter === Number(chapter) && n.verse === Number(v));
     setNoteText(existingNote ? existingNote.note : '');
     setActiveVerse(v);
@@ -144,10 +214,133 @@ const BibleReader = () => {
     setActiveVerse(null);
   };
 
+  // Handle navigation for book, chapter, and verse
+  const handleBookChange = (e) => {
+    const newBook = e.target.value;
+    if (newBook && currentBibleData[newBook]) {
+      setSelectedBook(newBook);
+      setSelectedChapter('');
+      setSelectedVerse('');
+      setError(null);
+      navigate(`/bible/${newBook}`);
+    } else {
+      setError('Invalid book selected.');
+    }
+  };
+
+  const handleChapterChange = (e) => {
+    const newChapter = e.target.value;
+    if (newChapter && bookData && bookData[newChapter]) {
+      setSelectedChapter(newChapter);
+      setSelectedVerse('');
+      setError(null);
+      navigate(`/bible/${selectedBook}/${newChapter}`);
+    } else {
+      setError('Invalid chapter selected.');
+    }
+  };
+
+  const handleVerseChange = (e) => {
+    const newVerse = e.target.value;
+    if (newVerse && chapterData && chapterData[newVerse]) {
+      setSelectedVerse(newVerse);
+      setError(null);
+      navigate(`/bible/${selectedBook}/${selectedChapter}#verse-${newVerse}`);
+    } else {
+      setError('Invalid verse selected.');
+    }
+  };
+
+  // Icon Key Data
+  const iconKey = [
+    { icon: '⭐', label: 'Saved Verse', color: savedIndicatorColor, description: 'Marks a verse you saved to view later.' },
+    { icon: '📝', label: 'Note', color: noteIndicatorColor, description: 'Shows you added a personal note to this verse.' },
+    { icon: '🔖', label: 'Bookmark', color: bookmarkIndicatorColor, description: 'Marks a verse for quick access.' },
+    { icon: '📖', label: 'Insight', color: insightIndicatorColor, description: 'Links to educational info about this verse.' }
+  ];
+
   return (
-    <div className={`p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-white ${modeClass} ${sizeClass} ${familyClass}`}>
+    <div className={`relative p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-white ${modeClass} ${sizeClass} ${familyClass}`}>
+      {/* Back Arrow */}
+      <button
+        onClick={() => navigate('/bible')}
+        className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
+        aria-label="Back to Bible Books"
+      >
+        🡨
+      </button>
+
+      {/* Icon Key */}
+      <div className={`mb-6 p-4 rounded-2xl shadow-xl border border-secondaryPurple ${modeClass}`}>
+        <h2 className={`text-lg font-bold mb-3 ${keyTextColor}`}>Icon Key</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {iconKey.map((item, index) => (
+            <div key={index} className="flex items-center space-x-2" title={item.description}>
+              <span className={`text-lg ${item.color}`}>{item.icon}</span>
+              <span className={`text-sm ${keyTextColor}`}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Controls and Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
         <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col">
+            <label htmlFor="book" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Book</label>
+            <select
+              id="book"
+              value={selectedBook}
+              onChange={handleBookChange}
+              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+              aria-label="Select book"
+            >
+              <option value="">Select Book</option>
+              {Object.keys(currentBibleData).sort().map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="chapter" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Chapter</label>
+            <select
+              id="chapter"
+              value={selectedChapter}
+              onChange={handleChapterChange}
+              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+              aria-label="Select chapter"
+              disabled={!selectedBook || !bookData}
+            >
+              <option value="">Select Chapter</option>
+              {bookData &&
+                Object.keys(bookData).sort((a, b) => Number(a) - Number(b)).map((ch) => (
+                  <option key={ch} value={ch}>
+                    Chapter {ch}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="verse" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Verse</label>
+            <select
+              id="verse"
+              value={selectedVerse}
+              onChange={handleVerseChange}
+              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+              aria-label="Select verse"
+              disabled={!selectedChapter || !chapterData}
+            >
+              <option value="">Select Verse</option>
+              {chapterData &&
+                Object.keys(chapterData).sort((a, b) => Number(a) - Number(b)).map((v) => (
+                  <option key={v} value={v}>
+                    Verse {v}
+                  </option>
+                ))}
+            </select>
+          </div>
           <div className="flex flex-col">
             <label htmlFor="mode" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Mode</label>
             <select
@@ -207,12 +400,14 @@ const BibleReader = () => {
         </div>
         <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">{book} {chapter}</h1>
       </div>
+      {error && <p className="text-center text-red-500 dark:text-red-300 mb-4">{error}</p>}
       <div className={`space-y-2 sm:space-y-4 p-2 sm:p-4 rounded-md ${modeClass}`}>
         {verses.map((v) => {
           const isHighlighted = user?.highlightedVerses?.some(h => h.book === book && h.chapter === Number(chapter) && h.verse === Number(v)) || false;
           const isSaved = user?.savedVerses?.some(s => s.book === book && s.chapter === Number(chapter) && s.verse === Number(v)) || false;
           const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(chapter) && b.verse === Number(v)) || false;
           const hasNote = user?.notes?.some(n => n.book === book && n.chapter === Number(chapter) && n.verse === Number(v)) || false;
+          const hasInsight = verseInsights[v] || false;
           return (
             <div key={v} className="relative">
               <p
@@ -256,6 +451,17 @@ const BibleReader = () => {
                   >
                     📝
                   </span>
+                )}
+                {hasInsight && (
+                  <Link
+                    to={`/insights?tab=${hasInsight[0].tab}&id=${hasInsight[0].id}`}
+                    className={`mr-2 text-xs ${insightIndicatorColor} cursor-pointer`}
+                    onClick={(e) => e.stopPropagation()}
+                    title={`Learn about ${hasInsight[0].title}`}
+                    aria-label={`Learn about ${hasInsight[0].title}`}
+                  >
+                    📖
+                  </Link>
                 )}
                 <span className="flex-grow">{chapterData[v]}</span>
               </p>
