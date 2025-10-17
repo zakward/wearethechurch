@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { peopleData } from '../data/BibleTranslations/peopleData.jsx'; // Changed from .jsx to .js
 
 const Persons = () => {
@@ -9,6 +9,7 @@ const Persons = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 20; // Adjustable for UX
+    const navigate = useNavigate();
 
   // Combine all people for processing
   const allPeople = [...peopleData.oldTestament, ...peopleData.newTestament];
@@ -58,6 +59,15 @@ const Persons = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-[60px] left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
+        aria-label="Back to Bible Books"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+      </button>
       <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center text-[#3B82B6]">Significant People in the Bible</h1>
 
       {/* Search and Filter/Sort Controls */}

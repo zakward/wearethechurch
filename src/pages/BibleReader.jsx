@@ -59,7 +59,9 @@ const BibleReader = () => {
           className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
           aria-label="Back to Home"
         >
-          🡨
+           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
         </button>
         <h1 className="text-4xl font-bold mb-6 text-primaryBlue dark:text-white text-center">{book}</h1>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
@@ -267,11 +269,13 @@ const BibleReader = () => {
         className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
         aria-label="Back to Bible Books"
       >
-        🡨
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
       </button>
 
       {/* Icon Key */}
-      <div className={`mb-6 p-4 rounded-2xl shadow-xl border border-secondaryPurple ${modeClass}`}>
+      <div className={`mb-6 mt-[40px] p-4 rounded-2xl shadow-xl border border-secondaryPurple ${modeClass}`}>
         <h2 className={`text-lg font-bold mb-3 ${keyTextColor}`}>Icon Key</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {iconKey.map((item, index) => (

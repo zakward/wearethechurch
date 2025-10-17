@@ -4,7 +4,7 @@ import { AuthContext } from '../AuthContext.jsx';
 import { BibleContext } from '../BibleContext.jsx';
 
 const Home = () => {
-  const { user } = useContext(AuthContext);
+  const { user, saveVerse } = useContext(AuthContext);
   const { getOverallProgress } = useContext(BibleContext);
 
   const popularVerses = [
@@ -45,6 +45,27 @@ const Home = () => {
 
   const progress = getOverallProgress();
 
+  const parseReference = (reference) => {
+    const parts = reference.split(' ');
+    const chapterVerse = parts.pop();
+    const book = parts.join(' ');
+    const [chapter, verse] = chapterVerse.split(':').map(Number);
+    return { book, chapter, verse };
+  };
+
+  const handleSaveVerse = () => {
+    const { book, chapter, verse } = parseReference(verseOfTheDay.reference);
+    saveVerse({
+      book,
+      chapter,
+      verse,
+      text: verseOfTheDay.text,
+      translation: verseOfTheDay.translation
+    });
+  };
+
+  const isSaved = formattedSaved.some(s => s.reference === verseOfTheDay.reference);
+
   // If user is not logged in, show a welcome message prompting them to log in
   if (!user) {
     return (
@@ -79,6 +100,23 @@ const Home = () => {
             "{verseOfTheDay.text}" — {verseOfTheDay.reference} ({verseOfTheDay.translation})
           </blockquote>
           <p className="mt-4 text-lg text-secondaryPink">Reflect on this and add your thoughts!</p>
+          <p className="mt-4 text-lg text-secondaryPink">Login to save this verse!</p>
+        </section>
+
+        {/* About Us Card - accessible without login */}
+        <section className="mb-12 bg-bgLightBlue p-8 rounded-3xl shadow-xl border-4 border-white text-center">
+          <h2 className="text-3xl font-bold mb-6 text-primaryBlue">About Us</h2>
+          <p className="text-lg text-textGray mb-4">
+            Discover We Are the Church—a community focused on a living faith in Christ without traditional hierarchies. Learn about our site creator Zak Ward and our core statement of faith centered on Christ, grace, and truth-seeking.
+          </p>
+          <div className="text-center">
+            <Link
+              to="/about"
+              className="inline-block bg-primaryYellow text-textGray font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:rotate-1 border-4 border-white"
+            >
+              Learn More About We Are The Church
+            </Link>
+          </div>
         </section>
 
         {/* Cool Resources Section - accessible without login */}
@@ -156,59 +194,90 @@ const Home = () => {
           "{verseOfTheDay.text}" — {verseOfTheDay.reference} ({verseOfTheDay.translation})
         </blockquote>
         <p className="mt-4 text-lg text-secondaryPink">Reflect on this and add your thoughts!</p>
+        <button
+          onClick={handleSaveVerse}
+          disabled={isSaved}
+          className={`mt-4 inline-block bg-primaryYellow text-textGray font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:rotate-1 border-4 border-white ${isSaved ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isSaved ? 'Verse Saved' : 'Save This Verse'}
+        </button>
       </section>
       {/* Dashboard Grid */}
       <section className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
-        {/* Quick Links Card */}
-        <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white md:col-span-2 lg:col-span-1">
-          <h2 className="text-2xl font-bold mb-4 text-primaryBlue flex items-center">
-            <span className="mr-2 text-3xl">🔗</span> Quick Explore
+        {/* Recent Bookmarks Card */}
+        <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white text-center">
+          <h2 className="text-2xl font-bold mb-4 text-primaryBlue flex items-center justify-center">
+            <span className="mr-2 text-3xl">🔖</span> Recent Bookmarks
           </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Link to="/bible" className="bg-primaryBlue text-white p-4 rounded-2xl hover:bg-primaryGreen transition-all duration-300 text-center hover:scale-105 border-4 border-white">
-              Bible Books
-            </Link>
-            <Link to="/persons" className="bg-primaryYellow text-textGray p-4 rounded-2xl hover:bg-secondaryOrange transition-all duration-300 text-center hover:scale-105 border-4 border-white">
-              Significant People
-            </Link>
-            <Link to="/map" className="bg-secondaryPink text-white p-4 rounded-2xl hover:bg-secondaryPurple transition-all duration-300 text-center hover:scale-105 sm:col-span-2 md:col-span-1 border-4 border-white">
-              Historical Map
-            </Link>
-            <Link to="/bookmarks" className="bg-primaryGreen text-white p-4 rounded-2xl hover:bg-green-700 transition-all duration-300 text-center hover:scale-105 sm:col-span-2 md:col-span-1 border-4 border-white">
-              Continue Reading
+          {user.bookmarks && user.bookmarks.length > 0 ? (
+            <ul className="space-y-2 text-sm mx-auto max-w-md">
+              {user.bookmarks.slice(0, 2).map((bookmark, index) => (
+                <li key={index} className="bg-bgLightBlue p-2 rounded-2xl">
+                  {bookmark.book} {bookmark.chapter}:{bookmark.verse}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-lg mb-4 text-textGray">No recent bookmarks yet.</p>
+          )}
+          <div className="text-center">
+            <Link
+              to="/bookmarks"
+              className="mt-4 inline-block bg-secondaryPink text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-pink-600 transition-all duration-300 hover:scale-105"
+            >
+              View All Bookmarks
             </Link>
           </div>
         </div>
-        {/* Progress Card - Dynamic */}
-        <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
-          <h2 className="text-2xl font-bold mb-4 text-primaryBlue flex items-center">
-            <span className="mr-2 text-3xl">📊</span> Your Progress
+
+        {/* About Us Card */}
+        <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white text-center">
+          <h2 className="text-2xl font-bold mb-4 text-primaryBlue flex items-center justify-center">
+            <span className="mr-2 text-3xl">ℹ️</span> About Us
           </h2>
           <p className="text-lg mb-4 text-textGray">
-            You've completed {progress}% of the Bible. Great job—keep the momentum!
+            Discover We Are the Church—a community focused on a living faith in Christ without traditional hierarchies. Learn about our site creator Zak Ward and our core statement of faith centered on Christ, grace, and truth-seeking.
           </p>
-          <div className="bg-primaryBlue/20 rounded-full h-4 overflow-hidden">
-            <div className="bg-primaryBlue h-full" style={{ width: `${progress}%` }} />
+          <div className="text-center">
+            <Link
+              to="/about"
+              className="inline-block bg-primaryYellow text-textGray font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:rotate-1 border-4 border-white"
+            >
+              Learn More About We Are The Church
+            </Link>
           </div>
-          <p className="mt-4 text-red-500 text-center">Under Construction</p>
         </div>
 
         {/* Notes Card */}
-        <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
-          <h2 className="text-2xl font-bold mb-4 text-primaryBlue flex items-center">
+        <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white text-center">
+          <h2 className="text-2xl font-bold mb-4 text-primaryBlue flex items-center justify-center">
             <span className="mr-2 text-3xl">📝</span> Recent Notes
           </h2>
-          <p className="text-lg mb-4 text-textGray">
-            Add thoughts, theories, or connections here (integrate backend later).
-          </p>
-          <ul className="space-y-2 text-sm">
-            <li className="bg-bgLightBlue p-2 rounded-2xl">Genesis 1:1 - In the beginning...</li>
-            <li className="bg-bgLightBlue p-2 rounded-2xl">Linking Psalms to modern life</li>
-          </ul>
-          <button className="mt-4 w-full bg-secondaryPink text-white py-2 rounded-full shadow-lg hover:bg-pink-600 transition-all duration-300 hover:scale-105">
-            Add New Note
-          </button>
-          <p className="mt-4 text-red-500 text-center">Under Construction</p>
+          {user.notes && user.notes.length > 0 ? (
+            <ul className="space-y-2 text-sm mx-auto max-w-md">
+              {user.notes.slice(0, 2).map((note, index) => (
+                <li key={index} className="bg-bgLightBlue p-2 rounded-2xl">
+                  {note.book} {note.chapter}:{note.verse} - {note.text.slice(0, 50)}...
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-lg mb-4 text-textGray">No recent notes yet.</p>
+          )}
+          <div className="text-center">
+            <button className="mt-4 inline-block bg-secondaryPink text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-pink-600 transition-all duration-300 hover:scale-105">
+              Add New Note
+            </button>
+          
+          </div>
+          <div className="text-center mt-4">
+            <Link
+              to="/notes"
+              className="inline-block bg-secondaryPink text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-pink-600 transition-all duration-300 hover:scale-105"
+            >
+              View All Notes
+            </Link>
+          </div>
         </div>
 
       </section>

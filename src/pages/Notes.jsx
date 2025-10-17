@@ -25,12 +25,14 @@ const Notes = () => {
   return (
     <div className="relative container mx-auto px-4 py-8 max-w-7xl">
       {/* Back Arrow */}
-      <button
+<button
         onClick={() => navigate('/')}
-        className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
-        aria-label="Back to Home"
+        className="absolute top-[0px] left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
+        aria-label="Back to Bible Books"
       >
-        🡨
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
       </button>
 
       <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">My Notes</h1>
