@@ -16,6 +16,7 @@ import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import Help from './pages/Help.jsx';
 import Persons from './pages/Persons.jsx';
+import PersonDetail from './pages/PersonDetail.jsx';
 import About from './pages/About.jsx';
 import { BibleProvider } from './BibleContext.jsx';
 import { AuthProvider } from './AuthContext.jsx';
@@ -40,6 +41,7 @@ const App = () => {
                 <Route path="/saved-verses" element={<SavedVerses />} />
                 <Route path="/forum" element={<Forum />} />
                 <Route path="/persons" element={<Persons />} />
+                <Route path="/persons/:name" element={<PersonDetail />} />
                 <Route path="/religions" element={<Religions />} />
                 <Route path="/religions/:id" element={<ReligionDetail />} />
                 <Route path="/login" element={<Login />} />
