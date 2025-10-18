@@ -17,7 +17,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-gradient-to-r from-gray-900 to-blue-900 bg-opacity-95 shadow-lg p-3 md:p-4 mt-auto">
-      <div className="container flex flex-col items-center">
+      <div className=" flex flex-col items-center">
         <div className="flex flex-wrap justify-center gap-2 md:gap-4">
           {user ? (
             <>
