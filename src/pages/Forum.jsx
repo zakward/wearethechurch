@@ -82,7 +82,7 @@ const Forum = () => {
           </svg>
       </button>
 
-      <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">Bible Forum</h1>
+      <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">Community Forum</h1>
 
       {/* Toggle Button for Create Post Form */}
       <div className="mb-6 flex justify-center">

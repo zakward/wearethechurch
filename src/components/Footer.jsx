@@ -17,33 +17,59 @@ const Footer = () => {
 
   return (
     <footer className="bg-gradient-to-r from-gray-900 to-blue-900 bg-opacity-95 shadow-lg p-3 md:p-4 mt-auto">
-      <div className="max-w-7xl mx-auto flex flex-col items-center">
-        <div className="flex flex-wrap justify-center gap-4 mb-4">
+      <div className="container flex flex-col items-center">
+        <div className="flex flex-wrap justify-center gap-2 md:gap-4">
           {user ? (
             <>
-              <Link to="/bible" className="text-white hover:underline">Bible Books</Link>
-              <Link to="/persons" className="text-white hover:underline">People</Link>
-              <Link to="/saved-verses" className="text-white hover:underline">Saved</Link>
-              <Link to="/notes" className="text-white hover:underline">Notes</Link>
-              <Link to="/bookmarks" className="text-white hover:underline">Bookmarks</Link>
-              <Link to="/forum" className="text-white hover:underline">Forum</Link>
-              <Link to="/insights" className="text-white hover:underline">Insights</Link>
-              <Link to="/map" className="text-white hover:underline">Map</Link>
-              <Link to="/help" className="text-white hover:underline">Help</Link>
-              <Link to="/about" className="text-white hover:underline">About</Link>
-              <button onClick={handleContinueReading} className="text-white hover:underline">Continue</button>
-              <button onClick={logout} className="text-white hover:underline">Logout</button>
+              <Link to="/bible" className="text-white hover:underline text-sm md:text-base">
+                Bible Books
+              </Link>
+              <Link to="/saved-verses" className="text-white hover:underline text-sm md:text-base">
+                Verses
+              </Link>
+              <Link to="/notes" className="text-white hover:underline text-sm md:text-base">
+                Notes
+              </Link>
+              <Link to="/bookmarks" className="text-white hover:underline text-sm md:text-base">
+                Bookmarks
+              </Link>
+              <Link to="/persons" className="text-white hover:underline text-sm md:text-base">
+                People
+              </Link>
+              <Link to="/insights" className="text-white hover:underline text-sm md:text-base">
+                Insights
+              </Link>
+              <Link to="/terminology" className="text-white hover:underline text-sm md:text-base">
+                Terms
+              </Link>
+              <Link to="/forum" className="text-white hover:underline text-sm md:text-base">
+                Forum
+              </Link>
+              <Link to="/help" className="text-white hover:underline text-sm md:text-base">
+                Help
+              </Link>
+              <button onClick={handleContinueReading} className="text-white hover:underline text-sm md:text-base">
+                Continue
+              </button>
+              <button onClick={logout} className="text-white hover:underline text-sm md:text-base">
+                Logout
+              </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="text-white hover:underline">Login</Link>
-              <Link to="/signup" className="text-white hover:underline">Signup</Link>
-              <Link to="/help" className="text-white hover:underline">Help</Link>
-              <Link to="/about" className="text-white hover:underline">About</Link>
+              <Link to="/login" className="text-white hover:underline text-sm md:text-base">
+                Login
+              </Link>
+              <Link to="/signup" className="text-white hover:underline text-sm md:text-base">
+                Signup
+              </Link>
+              <Link to="/help" className="text-white hover:underline text-sm md:text-base">
+                Help
+              </Link>
             </>
           )}
         </div>
-        <p className="text-white text-sm">Created by @ Zak Ward</p>
+        <p className="text-white text-sm mt-4 md:mt-6">Created by @ Zak Ward</p>
       </div>
     </footer>
   );

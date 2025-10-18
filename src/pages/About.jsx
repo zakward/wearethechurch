@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -24,7 +25,7 @@ const About = () => {
       <section className="mb-12 bg-bgLightBlue p-8 rounded-3xl shadow-xl border-4 border-white">
         <h2 className="text-3xl font-bold mb-6 text-primaryBlue text-center">Our Story</h2>
         <p className="text-lg text-textGray mb-4">
-          We Are the Church was founded by Zak Ward, a Senior Software Engineer, devoted father, loving husband, and firm believer in Christ as our Savior and God. Inspired by a vision of a "walking, breathing church" that embodies biblical truth through love and community, Zak created this platform and ministry in Ward, Arkansas. Drawing from non-denominational Christian principles and communal living reminiscent of the Essenes, our gatherings happen daily at the ranch, with guitar-led worship and Holy Spirit-guided leadership.
+          We Are the Church was founded by Zak Ward, a Senior Software Engineer, former firefighter, army officer, devoted father, loving husband, and firm believer in Christ as our Savior and God. Inspired by a vision of a "walking, breathing church" that embodies biblical truth through love and community, Zak created this platform and ministry in Ward, Arkansas. Drawing from non-denominational Christian principles and communal living reminiscent of the Essenes, our gatherings happen daily at the ranch, with guitar-led worship and Holy Spirit-guided leadership.
         </p>
         <p className="text-lg text-textGray mb-4">
           This isn't about buildings or hierarchies—it's about people coming together wherever they are, empowered by the Holy Spirit, to live out the Gospel in authenticity and grace.
@@ -87,7 +88,7 @@ const About = () => {
       </section>
 
       {/* Call to Action Section */}
-      <section className="text-center mb-12 bg-secondaryPink p-8 rounded-3xl shadow-xl border-4 border-white">
+      <section className="text-center mb-12 bg-primaryGreen p-8 rounded-3xl shadow-xl border-4 border-white">
         <h2 className="text-3xl font-bold mb-6 text-white">Join Us on This Journey</h2>
         <p className="text-lg mb-6 text-white/90">
           Whether you're seeking truth, exploring faith, or ready to dive deeper into a relationship with Jesus, We Are the Church welcomes you. No prerequisites, no judgments—just open hearts and the transforming power of God's love.
