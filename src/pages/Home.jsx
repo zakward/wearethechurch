@@ -211,9 +211,9 @@ const Home = () => {
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 text-white drop-shadow-md">
           Welcome, {user.name}!
         </h1>
-        <p className="text-lg sm:text-xl lg:text-2xl mb-6 text-white/90">
-          Dive into your Bible study journey—track progress, jot notes, and explore timeless wisdom.
-        </p>
+       <p className="text-lg sm:text-xl lg:text-2xl mb-6 text-white/90 font-medium leading-relaxed">
+  Explore the Bible like never before with personalized features to enhance your study experience. Save verses, take notes, track your progress, and connect with a community of believers.
+</p>
         <Link
           to="/bible"
           className="inline-block bg-primaryYellow text-textGray font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:rotate-1 border-4 border-white"
@@ -228,7 +228,7 @@ const Home = () => {
         <blockquote className="text-xl italic text-textGray max-w-2xl mx-auto">
           "{verseOfTheDay.text}" — {verseOfTheDay.reference} ({verseOfTheDay.translation})
         </blockquote>
-        <p className="mt-4 text-lg text-secondaryPink">Reflect on this and add your thoughts!</p>
+        {/* <p className="mt-4 text-lg text-secondaryPink">Reflect on this and add your thoughts!</p> */}
         <button
           onClick={handleSaveVerse}
           disabled={isSaved}
@@ -300,9 +300,9 @@ const Home = () => {
             <p className="text-lg mb-4 text-textGray">No recent notes yet.</p>
           )}
           <div className="text-center">
-            <button className="mt-4 inline-block bg-secondaryPink text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-pink-600 transition-all duration-300 hover:scale-105">
+            {/* <button className="mt-4 inline-block bg-secondaryPink text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-pink-600 transition-all duration-300 hover:scale-105">
               Add New Note
-            </button>
+            </button> */}
           
           </div>
           <div className="text-center mt-4">
