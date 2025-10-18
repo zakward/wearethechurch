@@ -119,6 +119,33 @@ const Home = () => {
           </div>
         </section>
 
+        {/* Upcoming Features Section */}
+        <section className="text-center mb-12 bg-gradient-to-br from-purple-100 to-blue-100 p-8 rounded-3xl shadow-xl border-4 border-white">
+          <h2 className="text-3xl font-bold mb-4 text-primaryBlue">Coming Soon</h2>
+          <p className="text-lg text-textGray mb-6">Exciting new features we're working on to enhance your Bible study experience!</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Interactive Ministry Map */}
+            <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-blue-200">
+              <div className="text-5xl mb-4">🗺️</div>
+              <h3 className="text-xl font-bold mb-2 text-primaryBlue">Interactive Ministry Map</h3>
+              <p className="text-textGray text-sm">Explore the journeys of Jesus and the apostles with an interactive historical map showing key locations and events from their ministry.</p>
+            </div>
+            {/* Testimonials */}
+            <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-blue-200">
+              <div className="text-5xl mb-4">💬</div>
+              <h3 className="text-xl font-bold mb-2 text-primaryBlue">Testimonials</h3>
+              <p className="text-textGray text-sm">Share your faith journey and be encouraged by testimonies from other believers in the community.</p>
+            </div>
+            {/* Prayer Requests */}
+            <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-blue-200">
+              <div className="text-5xl mb-4">🙏</div>
+              <h3 className="text-xl font-bold mb-2 text-primaryBlue">Prayer Requests</h3>
+              <p className="text-textGray text-sm">Submit prayer requests and pray for others in the community. Build a supportive network of believers lifting each other up.</p>
+            </div>
+          </div>
+          <p className="mt-6 text-sm text-gray-600 italic">Stay tuned for these features and more!</p>
+        </section>
+
         {/* Cool Resources Section - accessible without login */}
         <section className="text-center mb-12 bg-bgLightBlue p-8 rounded-3xl shadow-xl border-4 border-white">
           <h2 className="text-3xl font-bold mb-6 text-primaryBlue">Cool Resources</h2>
@@ -129,6 +156,14 @@ const Home = () => {
               <a href="https://bible.apologeticscanada.com/" target="_blank" rel="noopener noreferrer">
                 <img src="https://i.ytimg.com/vi/QhVPBNBAGY0/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAjKogoyGRvmShLGEr7f3odCpO_0A" alt="Can I Trust The Bible?" className="w-full h-48 object-cover rounded-2xl mb-4" />
                 <p className="text-textGray hover:text-funPink hover:underline">Explore the reliability of the Bible</p>
+              </a>
+            </div>
+            {/* Wes Huff - Archaeology & Bible */}
+            <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
+              <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Archaeology & the Bible</h3>
+              <a href="https://www.youtube.com/watch?v=p58vknxGR4I&t=50s" target="_blank" rel="noopener noreferrer">
+                <img src="https://i.ytimg.com/vi/p58vknxGR4I/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLD1dxk0FEm0adsjqrLPAGJh2QBpkA" alt="Archaeology and the Bible" className="w-full h-48 object-cover rounded-2xl mb-4" />
+                <p className="text-textGray hover:text-funPink hover:underline">Biblical archaeology insights</p>
               </a>
             </div>
             {/* The Shawn Ryan Show */}
@@ -282,6 +317,39 @@ const Home = () => {
 
       </section>
 
+      {/* Upcoming Features Section */}
+      <section className="text-center mb-12 bg-gradient-to-br from-purple-100 to-blue-100 p-8 rounded-3xl shadow-xl border-4 border-white">
+        <h2 className="text-3xl font-bold mb-4 text-primaryBlue">Coming Soon</h2>
+        <p className="text-lg text-textGray mb-6">Exciting new features we're working on to enhance your Bible study experience!</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Interactive Ministry Map */}
+          <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-blue-200">
+            <div className="text-5xl mb-4">🗺️</div>
+            <h3 className="text-xl font-bold mb-2 text-primaryBlue">Interactive Ministry Map</h3>
+            <p className="text-textGray text-sm">Explore the journeys of Jesus and the apostles with an interactive historical map showing key locations and events from their ministry.</p>
+          </div>
+          {/* Testimonials */}
+          <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-blue-200">
+            <div className="text-5xl mb-4">💬</div>
+            <h3 className="text-xl font-bold mb-2 text-primaryBlue">Testimonials</h3>
+            <p className="text-textGray text-sm">Share your faith journey and be encouraged by testimonies from other believers in the community.</p>
+          </div>
+          {/* Prayer Requests */}
+          <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-blue-200">
+            <div className="text-5xl mb-4">🙏</div>
+            <h3 className="text-xl font-bold mb-2 text-primaryBlue">Prayer Requests</h3>
+            <p className="text-textGray text-sm">Submit prayer requests and pray for others in the community. Build a supportive network of believers lifting each other up.</p>
+          </div>
+          {/* Track Your Progress */}
+          <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-blue-200">
+            <div className="text-5xl mb-4">📊</div>
+            <h3 className="text-xl font-bold mb-2 text-primaryBlue">Track Your Progress</h3>
+            <p className="text-textGray text-sm">Visualize your Bible reading journey with detailed statistics, charts, and milestones to celebrate your spiritual growth.</p>
+          </div>
+        </div>
+        <p className="mt-6 text-sm text-gray-600 italic">Stay tuned for these features and more!</p>
+      </section>
+
       {/* Cool Resources Section */}
       <section className="text-center mb-12 bg-bgLightBlue p-8 rounded-3xl shadow-xl border-4 border-white">
         <h2 className="text-3xl font-bold mb-6 text-primaryBlue">Cool Resources</h2>
@@ -292,6 +360,14 @@ const Home = () => {
             <a href="https://bible.apologeticscanada.com/" target="_blank" rel="noopener noreferrer">
               <img src="https://i.ytimg.com/vi/QhVPBNBAGY0/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAjKogoyGRvmShLGEr7f3odCpO_0A" alt="Can I Trust The Bible?" className="w-full h-48 object-cover rounded-2xl mb-4" />
               <p className="text-textGray hover:text-funPink hover:underline">Explore the reliability of the Bible</p>
+            </a>
+          </div>
+          {/* Wes Huff - Archaeology & Bible */}
+          <div className="bg-white p-6 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-4 border-white">
+            <h3 className="text-2xl font-bold mb-4 text-primaryBlue">Archaeology & the Bible</h3>
+            <a href="https://www.youtube.com/watch?v=p58vknxGR4I&t=50s" target="_blank" rel="noopener noreferrer">
+              <img src="https://i.ytimg.com/vi/p58vknxGR4I/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLD1dxk0FEm0adsjqrLPAGJh2QBpkA" alt="Archaeology and the Bible" className="w-full h-48 object-cover rounded-2xl mb-4" />
+              <p className="text-textGray hover:text-funPink hover:underline">Biblical archaeology insights</p>
             </a>
           </div>
           {/* The Shawn Ryan Show */}
