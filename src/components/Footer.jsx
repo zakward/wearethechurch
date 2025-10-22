@@ -40,7 +40,7 @@ const Footer = () => {
                 Insights
               </Link>
               <Link to="/terminology" className="text-white hover:underline text-sm md:text-base">
-                Terms
+                Glossary
               </Link>
               <Link to="/forum" className="text-white hover:underline text-sm md:text-base">
                 Forum

@@ -118,7 +118,7 @@ const Nav = () => {
                 className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/terminology')} transition-all duration-300 hover:scale-105`}
                 aria-label="Terms"
               >
-                Terms
+               Glossary
               </Link>
               <Link
                 to="/forum"
@@ -249,7 +249,7 @@ const Nav = () => {
                     className={`py-2 px-4 text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/terminology')}`}
                     aria-label="Terms"
                   >
-                    Terms
+                   Glossary
                   </Link>
                   <Link
                     to="/forum"

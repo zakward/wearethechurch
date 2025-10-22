@@ -93,7 +93,7 @@ const Insights = () => {
               <p className="text-textGray mt-2 italic"><span className="font-semibold not-italic">Analogy:</span> {item.analogy}</p>
             )}
             {item.context && (
-              <p className="text-textGray mt-2"><span className="font-semibold">Context:</span> {item.context}</p>
+              <p className="text-textGray mt-2"><span className="font-semibold">Historical Context:</span> {item.context}</p>
             )}
             <div className="mt-2">
               {item.keyFigures && (
@@ -181,7 +181,7 @@ const Insights = () => {
                       <p className="text-xs text-white bg-primaryBlue px-2 py-1 rounded-full inline-block mt-1 mb-2">{item.categoryName}</p>
                       <p className="text-sm text-gray-700 line-clamp-2">{item.description}</p>
                       {item.context && (
-                        <p className="text-sm text-gray-600 line-clamp-2 mt-1"><span className="font-semibold">Context:</span> {item.context}</p>
+                        <p className="text-sm text-gray-600 line-clamp-2 mt-1"><span className="font-semibold">Historical Context:</span> {item.context}</p>
                       )}
                     </div>
                     <span className="ml-4 text-blue-500 text-xl">→</span>

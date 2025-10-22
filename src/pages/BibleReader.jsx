@@ -1,10 +1,10 @@
-
 import React, { useContext, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BibleContext } from '../BibleContext.jsx';
 import { AuthContext } from '../AuthContext.jsx';
 import { ThemeContext } from '../ThemeContext.jsx';
 import { insightsData } from '../data/InsightsData.jsx';
+import { FaPlay, FaPause, FaForward } from 'react-icons/fa'; // For TTS icons
 
 const BibleReader = () => {
   const { book, chapter } = useParams();
@@ -20,6 +20,10 @@ const BibleReader = () => {
   const [selectedChapter, setSelectedChapter] = useState(chapter || '');
   const [selectedVerse, setSelectedVerse] = useState('');
   const [error, setError] = useState(null);
+  const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [utterance, setUtterance] = useState(null);
+  const [speechSupported, setSpeechSupported] = useState('speechSynthesis' in window);
 
   // Validate book and chapter
   const bookData = currentBibleData && selectedBook in currentBibleData ? currentBibleData[selectedBook] : null;
@@ -59,7 +63,7 @@ const BibleReader = () => {
           className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
           aria-label="Back to Home"
         >
-           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
@@ -85,6 +89,7 @@ const BibleReader = () => {
   }
 
   const verses = Object.keys(chapterData).sort((a, b) => Number(a) - Number(b));
+  const versesArray = verses.map(v => ({ number: v, text: chapterData[v] }));
 
   // Map verses to insights for inline links
   const verseInsights = {};
@@ -250,6 +255,55 @@ const BibleReader = () => {
       navigate(`/bible/${selectedBook}/${selectedChapter}#verse-${newVerse}`);
     } else {
       setError('Invalid verse selected.');
+    }
+  };
+
+  // TTS Logic
+  useEffect(() => {
+    if (speechSupported && versesArray.length > 0 && isSpeaking) {
+      speakVerse();
+    }
+    return () => {
+      if (speechSupported) window.speechSynthesis.cancel();
+    };
+  }, [currentVerseIndex, isSpeaking, versesArray]);
+
+  const speakVerse = () => {
+    if (versesArray.length === 0) return;
+
+    window.speechSynthesis.cancel(); // Stop any ongoing speech
+    const newUtterance = new SpeechSynthesisUtterance(versesArray[currentVerseIndex].text);
+    newUtterance.onend = () => {
+      if (currentVerseIndex < versesArray.length - 1) {
+        setCurrentVerseIndex(prev => prev + 1); // Auto-advance
+      } else {
+        setIsSpeaking(false); // End of chapter
+      }
+    };
+    window.speechSynthesis.speak(newUtterance);
+    setUtterance(newUtterance);
+  };
+
+  const handlePlayPause = () => {
+    if (!speechSupported) {
+      alert('Text-to-speech not supported in this browser.');
+      return;
+    }
+    if (isSpeaking) {
+      window.speechSynthesis.pause();
+    } else if (utterance) {
+      window.speechSynthesis.resume();
+    } else {
+      speakVerse();
+    }
+    setIsSpeaking(!isSpeaking);
+  };
+
+  const handleSkip = () => {
+    if (currentVerseIndex < versesArray.length - 1) {
+      window.speechSynthesis.cancel();
+      setCurrentVerseIndex(prev => prev + 1);
+      setIsSpeaking(true); // Start speaking next
     }
   };
 
