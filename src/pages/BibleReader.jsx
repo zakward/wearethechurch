@@ -25,10 +25,6 @@ const BibleReader = () => {
   const [utterance, setUtterance] = useState(null);
   const [speechSupported, setSpeechSupported] = useState('speechSynthesis' in window);
 
-  // Validate book and chapter
-  const bookData = currentBibleData && selectedBook in currentBibleData ? currentBibleData[selectedBook] : null;
-  const chapterData = bookData && selectedChapter in bookData ? bookData[selectedChapter] : null;
-
   // Sync selectedBook and selectedChapter with URL params
   useEffect(() => {
     if (book && currentBibleData[book]) {
@@ -41,55 +37,22 @@ const BibleReader = () => {
     }
   }, [book, chapter, currentBibleData]);
 
-  if (!currentBibleData || Object.keys(currentBibleData).length === 0) {
-    return <p className="text-center text-red-500 dark:text-red-300">Loading Bible data...</p>;
-  }
+  // TTS Logic
+  useEffect(() => {
+    if (speechSupported && isSpeaking && verses.length > 0) {
+      speakVerse();
+    }
+    return () => {
+      if (speechSupported) window.speechSynthesis.cancel();
+    };
+  }, [currentVerseIndex, isSpeaking]);
 
-  if (error) {
-    return <p className="text-center text-red-500 dark:text-red-300">{error}</p>;
-  }
+  // Validate book and chapter
+  const bookData = currentBibleData && selectedBook in currentBibleData ? currentBibleData[selectedBook] : null;
+  const chapterData = bookData && selectedChapter in bookData ? bookData[selectedChapter] : null;
 
-  if (!bookData) {
-    return <p className="text-center text-red-500 dark:text-red-300">Book not found.</p>;
-  }
-
-  if (!chapter) {
-    const chapters = Object.keys(bookData).sort((a, b) => Number(a) - Number(b));
-    return (
-      <div className="relative bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border-4 border-white">
-        {/* Back Arrow */}
-        <button
-          onClick={() => navigate('/')}
-          className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
-          aria-label="Back to Home"
-        >
-         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <h1 className="text-4xl font-bold mb-6 text-primaryBlue dark:text-white text-center">{book}</h1>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-          {chapters.map((ch) => (
-            <Link
-              key={ch}
-              to={`/bible/${book}/${ch}`}
-              className="bg-bgLightBlue text-white dark:bg-gray-700 p-4 rounded-2xl text-center hover:bg-primaryBlue hover:text-white transition-all duration-300"
-              aria-label={`Read ${book} Chapter ${ch}`}
-            >
-              Chapter {ch}
-            </Link>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!chapterData) {
-    return <p className="text-center text-red-500 dark:text-red-300">Chapter not found.</p>;
-  }
-
-  const verses = Object.keys(chapterData).sort((a, b) => Number(a) - Number(b));
-  const versesArray = verses.map(v => ({ number: v, text: chapterData[v] }));
+  const verses = chapterData ? Object.keys(chapterData).sort((a, b) => Number(a) - Number(b)) : [];
+  const versesArray = verses.map(v => ({ number: v, text: chapterData ? chapterData[v] : '' }));
 
   // Map verses to insights for inline links
   const verseInsights = {};
@@ -258,16 +221,6 @@ const BibleReader = () => {
     }
   };
 
-  // TTS Logic
-  useEffect(() => {
-    if (speechSupported && versesArray.length > 0 && isSpeaking) {
-      speakVerse();
-    }
-    return () => {
-      if (speechSupported) window.speechSynthesis.cancel();
-    };
-  }, [currentVerseIndex, isSpeaking, versesArray]);
-
   const speakVerse = () => {
     if (versesArray.length === 0) return;
 
@@ -282,29 +235,6 @@ const BibleReader = () => {
     };
     window.speechSynthesis.speak(newUtterance);
     setUtterance(newUtterance);
-  };
-
-  const handlePlayPause = () => {
-    if (!speechSupported) {
-      alert('Text-to-speech not supported in this browser.');
-      return;
-    }
-    if (isSpeaking) {
-      window.speechSynthesis.pause();
-    } else if (utterance) {
-      window.speechSynthesis.resume();
-    } else {
-      speakVerse();
-    }
-    setIsSpeaking(!isSpeaking);
-  };
-
-  const handleSkip = () => {
-    if (currentVerseIndex < versesArray.length - 1) {
-      window.speechSynthesis.cancel();
-      setCurrentVerseIndex(prev => prev + 1);
-      setIsSpeaking(true); // Start speaking next
-    }
   };
 
   // Icon Key Data
@@ -381,7 +311,7 @@ const BibleReader = () => {
             </select>
           </div>
           <div className="flex flex-col">
-            <label htmlFor="verse" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Verse</label>
+            {/* <label htmlFor="verse" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Verse</label>
             <select
               id="verse"
               value={selectedVerse}
@@ -397,7 +327,7 @@ const BibleReader = () => {
                     Verse {v}
                   </option>
                 ))}
-            </select>
+            </select> */}
           </div>
           <div className="flex flex-col">
             <label htmlFor="mode" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Mode</label>
