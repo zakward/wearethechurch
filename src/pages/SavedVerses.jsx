@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
 
 const SavedVerses = () => {
-  const { user, deleteSavedVerse, resetUnreadSaved } = useContext(AuthContext);
+  const { user, unsaveVerse, resetUnreadSaved } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,7 +52,7 @@ const SavedVerses = () => {
               <p className="text-textGray mt-2">{verse.text}</p>
               <p className="text-textGray text-sm mt-1">Added: {new Date(verse.timestamp || new Date()).toLocaleString()}</p>
               <button
-                onClick={() => deleteSavedVerse(index)}
+                onClick={() => unsaveVerse(verse.book, verse.chapter, verse.verse)}
                 className="mt-2 bg-secondaryPink text-white py-1 px-3 rounded-full hover:bg-pink-600 transition-all duration-300"
                 aria-label={`Delete saved verse ${verse.book} ${verse.chapter}:${verse.verse}`}
               >

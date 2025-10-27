@@ -60,7 +60,8 @@ const Home = () => {
       chapter,
       verse,
       text: verseOfTheDay.text,
-      translation: verseOfTheDay.translation
+      translation: verseOfTheDay.translation,
+      timestamp: new Date().toISOString() // Add timestamp for sorting/display
     });
   };
 
