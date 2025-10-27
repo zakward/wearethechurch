@@ -7,7 +7,9 @@ import { insightsData } from '../data/InsightsData.jsx';
 import { FaPlay, FaPause, FaForward } from 'react-icons/fa'; // For TTS icons
 
 const BibleReader = () => {
-  const { book, chapter } = useParams();
+  const params = useParams();
+  const book = params.book;
+  const chapterParam = params.chapter;
   const { currentBibleData, markCompleted, currentTranslation, setCurrentTranslation } = useContext(BibleContext);
   const { user, saveVerse, highlightVerse, unsaveVerse, addBookmark, unbookmark, addNote } = useContext(AuthContext);
   const { fontSize, setFontSize, fontFamily, setFontFamily } = useContext(ThemeContext);
@@ -17,7 +19,7 @@ const BibleReader = () => {
   const [noteText, setNoteText] = useState('');
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState(book || '');
-  const [selectedChapter, setSelectedChapter] = useState(chapter || '');
+  const [selectedChapter, setSelectedChapter] = useState('');
   const [selectedVerse, setSelectedVerse] = useState('');
   const [error, setError] = useState(null);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
@@ -25,17 +27,22 @@ const BibleReader = () => {
   const [utterance, setUtterance] = useState(null);
   const [speechSupported, setSpeechSupported] = useState('speechSynthesis' in window);
 
-  // Sync selectedBook and selectedChapter with URL params
+  // Sync selectedBook and selectedChapter with URL params, default to chapter 1 if no chapter
   useEffect(() => {
-    if (book && currentBibleData[book]) {
+    if (book && currentBibleData && currentBibleData[book]) {
       setSelectedBook(book);
-      setSelectedChapter(chapter || '');
+      const initialChapter = chapterParam || '1'; // Default to '1' if no chapter in URL
+      setSelectedChapter(initialChapter);
       setSelectedVerse('');
       setError(null);
+      // If no chapter in URL, navigate to chapter 1
+      if (!chapterParam) {
+        navigate(`/bible/${book}/1`, { replace: true });
+      }
     } else {
       setError('Invalid book or chapter selected.');
     }
-  }, [book, chapter, currentBibleData]);
+  }, [book, chapterParam, currentBibleData, navigate]);
 
   // TTS Logic
   useEffect(() => {
@@ -61,7 +68,7 @@ const BibleReader = () => {
       item.verseReferences.forEach((ref) => {
         const [refBook, chapterVerse] = ref.split(' ');
         const [refChapter, refVerse] = chapterVerse.includes(':') ? chapterVerse.split(':') : [chapterVerse, null];
-        if (refBook === book && refChapter === chapter) {
+        if (refBook === book && refChapter === selectedChapter) {
           const verseRange = refVerse ? refVerse.split('-').map(Number) : [Number(refVerse)];
           verseRange.forEach((v) => {
             if (!verseInsights[v]) verseInsights[v] = [];
@@ -117,14 +124,14 @@ const BibleReader = () => {
 
   const handleSave = (v) => {
     const text = chapterData[v];
-    const verseObj = { book, chapter: Number(chapter), verse: Number(v), text, translation: currentTranslation, timestamp: new Date().toISOString() };
+    const verseObj = { book, chapter: Number(selectedChapter), verse: Number(v), text, translation: currentTranslation, timestamp: new Date().toISOString() };
     saveVerse(verseObj);
     alert('Verse saved!');
     setActiveVerse(null);
   };
 
   const handleShare = (v) => {
-    const shareText = `${book} ${chapter}:${v} "${chapterData[v]}" (${currentTranslation})`;
+    const shareText = `${book} ${selectedChapter}:${v} "${chapterData[v]}" (${currentTranslation})`;
     navigator.clipboard.writeText(shareText).then(() => {
       alert('Verse copied to clipboard!');
     });
@@ -132,22 +139,22 @@ const BibleReader = () => {
   };
 
   const handleHighlight = (v) => {
-    highlightVerse(book, Number(chapter), Number(v));
+    highlightVerse(book, Number(selectedChapter), Number(v));
     setActiveVerse(null);
   };
 
   const handleUnsave = (v) => {
-    unsaveVerse(book, Number(chapter), Number(v));
+    unsaveVerse(book, Number(selectedChapter), Number(v));
     alert('Verse unsaved!');
     setActiveVerse(null);
   };
 
   const handleBookmark = (v) => {
     const text = chapterData[v];
-    const obj = { book, chapter: Number(chapter), verse: Number(v), text, translation: currentTranslation, timestamp: new Date().toISOString() };
-    const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(chapter) && b.verse === Number(v)) || false;
+    const obj = { book, chapter: Number(selectedChapter), verse: Number(v), text, translation: currentTranslation, timestamp: new Date().toISOString() };
+    const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(selectedChapter) && b.verse === Number(v)) || false;
     if (isBookmarked) {
-      unbookmark(book, Number(chapter), Number(v));
+      unbookmark(book, Number(selectedChapter), Number(v));
       alert('Bookmark removed!');
     } else {
       addBookmark(obj);
@@ -157,7 +164,7 @@ const BibleReader = () => {
   };
 
   const handleOpenNoteModal = (v) => {
-    const existingNote = user?.notes?.find(n => n.book === book && n.chapter === Number(chapter) && n.verse === Number(v));
+    const existingNote = user?.notes?.find(n => n.book === book && n.chapter === Number(selectedChapter) && n.verse === Number(v));
     setNoteText(existingNote ? existingNote.note : '');
     setActiveVerse(v);
     setIsNoteModalOpen(true);
@@ -170,7 +177,7 @@ const BibleReader = () => {
     }
     const noteObj = {
       book,
-      chapter: Number(chapter),
+      chapter: Number(selectedChapter),
       verse: Number(v),
       text: chapterData[v],
       note: noteText,
@@ -189,10 +196,10 @@ const BibleReader = () => {
     const newBook = e.target.value;
     if (newBook && currentBibleData[newBook]) {
       setSelectedBook(newBook);
-      setSelectedChapter('');
+      setSelectedChapter('1'); // Default to chapter 1 on book change
       setSelectedVerse('');
       setError(null);
-      navigate(`/bible/${newBook}`);
+      navigate(`/bible/${newBook}/1`);
     } else {
       setError('Invalid book selected.');
     }
@@ -244,6 +251,10 @@ const BibleReader = () => {
     { icon: '🔖', label: 'Bookmark', color: bookmarkIndicatorColor, description: 'Marks a verse for quick access.' },
     { icon: '📖', label: 'Insight', color: insightIndicatorColor, description: 'Links to educational info about this verse.' }
   ];
+
+  if (!currentBibleData) {
+    return <div className="text-center p-8">Loading Bible data...</div>;
+  }
 
   return (
     <div className={`relative p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-white ${modeClass} ${sizeClass} ${familyClass}`}>
@@ -386,121 +397,125 @@ const BibleReader = () => {
             </select>
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">{book} {chapter}</h1>
+        <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">{book} {selectedChapter}</h1>
       </div>
       {error && <p className="text-center text-red-500 dark:text-red-300 mb-4">{error}</p>}
-      <div className={`space-y-2 sm:space-y-4 p-2 sm:p-4 rounded-md ${modeClass}`}>
-        {verses.map((v) => {
-          const isHighlighted = user?.highlightedVerses?.some(h => h.book === book && h.chapter === Number(chapter) && h.verse === Number(v)) || false;
-          const isSaved = user?.savedVerses?.some(s => s.book === book && s.chapter === Number(chapter) && s.verse === Number(v)) || false;
-          const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(chapter) && b.verse === Number(v)) || false;
-          const hasNote = user?.notes?.some(n => n.book === book && n.chapter === Number(chapter) && n.verse === Number(v)) || false;
-          const hasInsight = verseInsights[v] || false;
-          return (
-            <div key={v} className="relative">
-              <p
-                id={`verse-${v}`}
-                onClick={() => setActiveVerse(activeVerse === v ? null : v)}
-                className={`${isHighlighted ? 'bg-yellow-300 dark:bg-yellow-300/80 sepia:bg-yellow-200/80 high-contrast:bg-yellow-400/90' : ''} cursor-pointer select-text flex items-start`}
-              >
-                <sup className="font-bold mr-2 flex-shrink-0">{v}</sup>
-                {isSaved && (
-                  <span
-                    className={`mr-2 text-xs ${savedIndicatorColor} cursor-pointer`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleUnsave(v);
-                    }}
-                    title="Unsave verse"
-                  >
-                    ⭐
-                  </span>
+      {!chapterData ? (
+        <p className="text-center text-textGray">Loading chapter...</p>
+      ) : (
+        <div className={`space-y-2 sm:space-y-4 p-2 sm:p-4 rounded-md ${modeClass}`}>
+          {verses.map((v) => {
+            const isHighlighted = user?.highlightedVerses?.some(h => h.book === book && h.chapter === Number(selectedChapter) && h.verse === Number(v)) || false;
+            const isSaved = user?.savedVerses?.some(s => s.book === book && s.chapter === Number(selectedChapter) && s.verse === Number(v)) || false;
+            const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(selectedChapter) && b.verse === Number(v)) || false;
+            const hasNote = user?.notes?.some(n => n.book === book && n.chapter === Number(selectedChapter) && n.verse === Number(v)) || false;
+            const hasInsight = verseInsights[v] || false;
+            return (
+              <div key={v} className="relative">
+               <p
+                  id={`verse-${v}`}
+                  onClick={() => setActiveVerse(activeVerse === v ? null : v)}
+                  className={`${isHighlighted ? (mode === 'dark' || mode === 'high-contrast' ? 'bg-yellow-300 text-black' : mode === 'sepia' ? 'bg-yellow-200 text-[#5F4B32]' : 'bg-yellow-300 text-black') : ''} cursor-pointer select-text flex items-start`}
+                >
+                  <sup className="font-bold mr-2 flex-shrink-0">{v}</sup>
+                  {isSaved && (
+                    <span
+                      className={`mr-2 text-xs ${savedIndicatorColor} cursor-pointer`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUnsave(v);
+                      }}
+                      title="Unsave verse"
+                    >
+                      ⭐
+                    </span>
+                  )}
+                  {isBookmarked && (
+                    <span
+                      className={`mr-2 text-xs ${bookmarkIndicatorColor} cursor-pointer`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBookmark(v);
+                      }}
+                      title="Remove bookmark"
+                    >
+                      🔖
+                    </span>
+                  )}
+                  {hasNote && (
+                    <span
+                      className={`mr-2 text-xs ${noteIndicatorColor} cursor-pointer`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenNoteModal(v);
+                      }}
+                      title="View/Edit note"
+                    >
+                      📝
+                    </span>
+                  )}
+                  {hasInsight && (
+                    <Link
+                      to={`/insights?tab=${hasInsight[0].tab}&id=${hasInsight[0].id}`}
+                      className={`mr-2 text-xs ${insightIndicatorColor} cursor-pointer`}
+                      onClick={(e) => e.stopPropagation()}
+                      title={`Learn about ${hasInsight[0].title}`}
+                      aria-label={`Learn about ${hasInsight[0].title}`}
+                    >
+                      📖
+                    </Link>
+                  )}
+                  <span className="flex-grow">{chapterData[v]}</span>
+                </p>
+                {activeVerse === v && (
+                  <div className={`absolute left-0 z-10 mt-1 w-[80vw] md:w-64 rounded-md shadow-2xl ${dropdownClass}`}>
+                    <button
+                      onClick={() => handleSave(v)}
+                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
+                      aria-label="Save verse"
+                    >
+                      Save Verse
+                    </button>
+                    <button
+                      onClick={() => handleShare(v)}
+                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
+                      aria-label="Share verse"
+                    >
+                      Share Verse
+                    </button>
+                    <button
+                      onClick={() => handleHighlight(v)}
+                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
+                      aria-label={isHighlighted ? 'Unhighlight verse' : 'Highlight verse'}
+                    >
+                      {isHighlighted ? 'Unhighlight Verse' : 'Highlight Verse'}
+                    </button>
+                    <button
+                      onClick={() => handleBookmark(v)}
+                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
+                      aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+                    >
+                      {isBookmarked ? 'Remove Bookmark' : 'Add Bookmark'}
+                    </button>
+                    <button
+                      onClick={() => handleOpenNoteModal(v)}
+                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
+                      aria-label={hasNote ? 'Edit/View note' : 'Add note'}
+                    >
+                      {hasNote ? 'Edit/View Note' : 'Add Note'}
+                    </button>
+                  </div>
                 )}
-                {isBookmarked && (
-                  <span
-                    className={`mr-2 text-xs ${bookmarkIndicatorColor} cursor-pointer`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleBookmark(v);
-                    }}
-                    title="Remove bookmark"
-                  >
-                    🔖
-                  </span>
-                )}
-                {hasNote && (
-                  <span
-                    className={`mr-2 text-xs ${noteIndicatorColor} cursor-pointer`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenNoteModal(v);
-                    }}
-                    title="View/Edit note"
-                  >
-                    📝
-                  </span>
-                )}
-                {hasInsight && (
-                  <Link
-                    to={`/insights?tab=${hasInsight[0].tab}&id=${hasInsight[0].id}`}
-                    className={`mr-2 text-xs ${insightIndicatorColor} cursor-pointer`}
-                    onClick={(e) => e.stopPropagation()}
-                    title={`Learn about ${hasInsight[0].title}`}
-                    aria-label={`Learn about ${hasInsight[0].title}`}
-                  >
-                    📖
-                  </Link>
-                )}
-                <span className="flex-grow">{chapterData[v]}</span>
-              </p>
-              {activeVerse === v && (
-                <div className={`absolute left-0 z-10 mt-1 w-[80vw] md:w-64 rounded-md shadow-2xl ${dropdownClass}`}>
-                  <button
-                    onClick={() => handleSave(v)}
-                    className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                    aria-label="Save verse"
-                  >
-                    Save Verse
-                  </button>
-                  <button
-                    onClick={() => handleShare(v)}
-                    className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                    aria-label="Share verse"
-                  >
-                    Share Verse
-                  </button>
-                  <button
-                    onClick={() => handleHighlight(v)}
-                    className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                    aria-label={isHighlighted ? 'Unhighlight verse' : 'Highlight verse'}
-                  >
-                    {isHighlighted ? 'Unhighlight Verse' : 'Highlight Verse'}
-                  </button>
-                  <button
-                    onClick={() => handleBookmark(v)}
-                    className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                    aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
-                  >
-                    {isBookmarked ? 'Remove Bookmark' : 'Add Bookmark'}
-                  </button>
-                  <button
-                    onClick={() => handleOpenNoteModal(v)}
-                    className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                    aria-label={hasNote ? 'Edit/View note' : 'Add note'}
-                  >
-                    {hasNote ? 'Edit/View Note' : 'Add Note'}
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
       {/* Note Modal */}
       {isNoteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className={`w-4/5 max-w-md p-6 rounded-3xl shadow-2xl ${modeClass}`}>
-            <h2 className="text-xl font-bold mb-4 text-primaryBlue dark:text-white">Add Note for {book} {chapter}:{activeVerse}</h2>
+            <h2 className="text-xl font-bold mb-4 text-primaryBlue dark:text-white">Add Note for {book} {selectedChapter}:{activeVerse}</h2>
             <textarea
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
@@ -534,9 +549,9 @@ const BibleReader = () => {
       )}
       {/* Navigation */}
       <div className="mt-8 flex justify-between">
-        {Number(chapter) > 1 && (
+        {Number(selectedChapter) > 1 && (
           <Link
-            to={`/bible/${book}/${Number(chapter) - 1}`}
+            to={`/bible/${book}/${Number(selectedChapter) - 1}`}
             className="text-primaryBlue dark:text-blue-300 hover:underline"
             aria-label="Previous chapter"
           >
@@ -550,9 +565,9 @@ const BibleReader = () => {
         >
           Back to Chapters
         </Link>
-        {Number(chapter) < Object.keys(bookData).length && (
+        {bookData && Number(selectedChapter) < Object.keys(bookData).length && (
           <Link
-            to={`/bible/${book}/${Number(chapter) + 1}`}
+            to={`/bible/${book}/${Number(selectedChapter) + 1}`}
             className="text-primaryBlue dark:text-blue-300 hover:underline"
             aria-label="Next chapter"
           >
@@ -561,7 +576,7 @@ const BibleReader = () => {
         )}
       </div>
       <button
-        onClick={() => markCompleted(book, Number(chapter))}
+        onClick={() => markCompleted(book, Number(selectedChapter))}
         className="mt-4 bg-primaryGreen text-white py-2 px-4 rounded-full hover:bg-green-600"
         aria-label="Mark chapter as completed"
       >

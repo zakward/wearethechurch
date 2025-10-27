@@ -1,292 +1,241 @@
+// Updated src/contexts/AuthProvider.js
+// Implemented highlightVerse to call apiHighlightVerse and update user state/localStorage.
+
 import React, { createContext, useState, useEffect } from 'react';
+import { signup as apiSignup, login as apiLogin, getProfile, saveVerse as apiSaveVerse, unsaveVerse as apiUnsaveVerse, addBookmark as apiAddBookmark, unbookmark as apiUnbookmark, addNote as apiAddNote, resetUnreadNotes as apiResetUnreadNotes, resetUnreadSaved as apiResetUnreadSaved, resetUnreadBookmarks as apiResetUnreadBookmarks, getForumPosts, addForumPost as apiAddForumPost, addComment as apiAddComment, deleteForumPost as apiDeleteForumPost, deleteComment as apiDeleteComment, highlightVerse as apiHighlightVerse } from './api'; // Adjust path
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [forumPosts, setForumPosts] = useState([]); // Global forum posts
+  const [forumPosts, setForumPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUsers = JSON.parse(localStorage.getItem('users')) || [];
-    const updatedUsers = storedUsers.map(u => ({
-      ...u,
-      savedVerses: u.savedVerses || [],
-      highlightedVerses: u.highlightedVerses || [],
-      bookmarks: u.bookmarks || [],
-      notes: u.notes || [],
-      unreadSavedCount: u.unreadSavedCount || 0,
-      unreadNotesCount: u.unreadNotesCount || 0,
-      unreadBookmarksCount: u.unreadBookmarksCount || 0 // Add unread bookmarks count
-    }));
-    if (JSON.stringify(storedUsers) !== JSON.stringify(updatedUsers)) {
-      localStorage.setItem('users', JSON.stringify(updatedUsers));
-    }
-    setUsers(updatedUsers);
-
-    const storedUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (storedUser) {
-      const fixedUser = {
-        ...storedUser,
-        savedVerses: storedUser.savedVerses || [],
-        highlightedVerses: storedUser.highlightedVerses || [],
-        bookmarks: storedUser.bookmarks || [],
-        notes: storedUser.notes || [],
-        unreadSavedCount: storedUser.unreadSavedCount || 0,
-        unreadNotesCount: storedUser.unreadNotesCount || 0,
-        unreadBookmarksCount: storedUser.unreadBookmarksCount || 0 // Add unread bookmarks count
-      };
-      if (JSON.stringify(storedUser) !== JSON.stringify(fixedUser)) {
-        localStorage.setItem('currentUser', JSON.stringify(fixedUser));
+    const loadUser = async () => {
+      if (typeof window === 'undefined') return setLoading(false);
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Load cached user for quick render
+        const cachedUser = localStorage.getItem('currentUser');
+        if (cachedUser) {
+          try {
+            setUser(JSON.parse(cachedUser));
+          } catch (err) {
+            console.error('Failed to parse cached user:', err);
+          }
+        }
+        // Then fetch fresh from API
+        try {
+          const profile = await getProfile();
+          setUser(profile);
+          localStorage.setItem('currentUser', JSON.stringify(profile));
+        } catch (err) {
+          console.error('Failed to load profile from API:', err);
+          // Keep cached if API fails (e.g., offline)
+        }
       }
-      setUser(fixedUser);
-    }
-
-    // Load forum posts from localStorage (simulating public storage)
-    const storedForumPosts = JSON.parse(localStorage.getItem('forumPosts')) || [];
-    setForumPosts(storedForumPosts);
-
-    setLoading(false);
+      setLoading(false);
+    };
+    loadUser();
+    fetchForumPosts();
   }, []);
 
-  const signup = (name, email, password) => {
-    if (users.some(u => u.email === email)) {
-      alert('Email already exists');
-      return;
+  const fetchForumPosts = async () => {
+    try {
+      const posts = await getForumPosts();
+      setForumPosts(posts);
+    } catch (err) {
+      console.error('Failed to fetch forum posts:', err);
     }
-    const newUser = {
-      name,
-      email,
-      password,
-      savedVerses: [],
-      highlightedVerses: [],
-      bookmarks: [],
-      notes: [],
-      unreadSavedCount: 0,
-      unreadNotesCount: 0,
-      unreadBookmarksCount: 0 // Initialize unread bookmarks count
-    };
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-    setUser(newUser);
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
   };
 
-  const login = (email, password) => {
-    let foundUser = users.find(u => u.email === email && u.password === password);
-    if (foundUser) {
-      const fixedUser = {
-        ...foundUser,
-        savedVerses: foundUser.savedVerses || [],
-        highlightedVerses: foundUser.highlightedVerses || [],
-        bookmarks: foundUser.bookmarks || [],
-        notes: foundUser.notes || [],
-        unreadSavedCount: foundUser.unreadSavedCount || 0,
-        unreadNotesCount: foundUser.unreadNotesCount || 0,
-        unreadBookmarksCount: foundUser.unreadBookmarksCount || 0 // Add unread bookmarks count
-      };
-      setUser(fixedUser);
-      localStorage.setItem('currentUser', JSON.stringify(fixedUser));
-      if (JSON.stringify(foundUser) !== JSON.stringify(fixedUser)) {
-        const updatedUsers = users.map(u => u.email === email ? fixedUser : u);
-        setUsers(updatedUsers);
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
-      }
-    } else {
-      alert('Invalid credentials');
+  const signup = async (name, email, password) => {
+    try {
+      const { token, user: newUser } = await apiSignup(name, email, password);
+      localStorage.setItem('token', token);
+      console.log('Token saved during signup:', token);
+      // Fetch full profile after signup
+      const profile = await getProfile();
+      setUser(profile);
+      localStorage.setItem('currentUser', JSON.stringify(profile));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const login = async (email, password) => {
+    try {
+      const { token, user: loggedUser } = await apiLogin(email, password);
+      localStorage.setItem('token', token);
+      console.log('Token saved during login:', token);
+      const profile = await getProfile(); // Fetch full profile
+      setUser(profile);
+      localStorage.setItem('currentUser', JSON.stringify(profile));
+    } catch (err) {
+      alert(err.message);
     }
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
   };
 
-  const saveVerse = (verseObj) => {
+  const saveVerse = async (verseObj) => {
     if (!user) return;
-    const newSaved = [...(user.savedVerses || []), verseObj];
-    const newCount = (user.unreadSavedCount || 0) + 1;
-    const updatedUser = { ...user, savedVerses: newSaved, unreadSavedCount: newCount };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-  };
-
-  const deleteSavedVerse = (index) => {
-    if (!user) return;
-    const newSaved = [...(user.savedVerses || [])];
-    newSaved.splice(index, 1);
-    const updatedUser = { ...user, savedVerses: newSaved };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-  };
-
-  const unsaveVerse = (book, chapter, verse) => {
-    if (!user) return;
-    const newSaved = (user.savedVerses || []).filter(s => !(s.book === book && s.chapter === chapter && s.verse === verse));
-    const updatedUser = { ...user, savedVerses: newSaved };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-  };
-
-  const addBookmark = (bookmarkObj) => {
-    if (!user) return;
-    const newBookmarks = [bookmarkObj, ...(user.bookmarks || [])];
-    const newCount = (user.unreadBookmarksCount || 0) + 1; // Increment unread bookmarks count
-    const updatedUser = { ...user, bookmarks: newBookmarks, unreadBookmarksCount: newCount };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-  };
-
-  const deleteBookmark = (index) => {
-    if (!user) return;
-    const newBookmarks = [...(user.bookmarks || [])];
-    newBookmarks.splice(index, 1);
-    const updatedUser = { ...user, bookmarks: newBookmarks };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-  };
-
-  const unbookmark = (book, chapter, verse) => {
-    if (!user) return;
-    const newBookmarks = (user.bookmarks || []).filter(b => !(b.book === book && b.chapter === chapter && b.verse === verse));
-    const updatedUser = { ...user, bookmarks: newBookmarks };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-  };
-
-  const highlightVerse = (book, chapter, verse) => {
-    if (!user) return;
-    const hObj = { book, chapter, verse };
-    let newHigh = [...(user.highlightedVerses || [])];
-    const index = newHigh.findIndex(h => h.book === book && h.chapter === chapter && h.verse === verse);
-    if (index > -1) {
-      newHigh.splice(index, 1);
-    } else {
-      newHigh.push(hObj);
+    try {
+      const updatedSaved = await apiSaveVerse(verseObj);
+      const updatedUser = { ...user, savedVerses: updatedSaved, unreadSavedCount: (user.unreadSavedCount || 0) + 1 };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error saving verse:', err);
     }
-    const updatedUser = { ...user, highlightedVerses: newHigh };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
   };
 
-  const addNote = (noteObj) => {
+  const unsaveVerse = async (book, chapter, verse) => {
     if (!user) return;
-    const newNotes = [noteObj, ...(user.notes || [])];
-    const newCount = (user.unreadNotesCount || 0) + 1;
-    const updatedUser = { ...user, notes: newNotes, unreadNotesCount: newCount };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    try {
+      const updatedSaved = await apiUnsaveVerse({ book, chapter, verse });
+      const updatedUser = { ...user, savedVerses: updatedSaved };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error unsaving verse:', err);
+    }
   };
 
-  const deleteNote = (index) => {
+  // Similar for deleteSavedVerse if needed (by index? Use unsave)
+
+  const addBookmark = async (bookmarkObj) => {
     if (!user) return;
-    const newNotes = [...(user.notes || [])];
-    newNotes.splice(index, 1);
-    const updatedUser = { ...user, notes: newNotes };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    try {
+      const updatedBookmarks = await apiAddBookmark(bookmarkObj);
+      const updatedUser = { ...user, bookmarks: updatedBookmarks, unreadBookmarksCount: (user.unreadBookmarksCount || 0) + 1 };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error adding bookmark:', err);
+    }
   };
 
-  const resetUnreadNotes = () => {
+  const unbookmark = async (book, chapter, verse) => {
+    if (!user) return;
+    try {
+      const updatedBookmarks = await apiUnbookmark({ book, chapter, verse });
+      const updatedUser = { ...user, bookmarks: updatedBookmarks };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error unbookmarking:', err);
+    }
+  };
+
+  // Similar for deleteBookmark
+
+  const highlightVerse = async (book, chapter, verse) => {
+    if (!user) return;
+    try {
+      const updatedHighlighted = await apiHighlightVerse({ book, chapter, verse });
+      const updatedUser = { ...user, highlightedVerses: updatedHighlighted };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error highlighting verse:', err);
+    }
+  };
+
+  const addNote = async (noteObj) => {
+    if (!user) return;
+    try {
+      const updatedNotes = await apiAddNote(noteObj);
+      const updatedUser = { ...user, notes: updatedNotes, unreadNotesCount: (user.unreadNotesCount || 0) + 1 };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error adding note:', err);
+    }
+  };
+
+  // deleteNote: similar, assume backend route, then update and save to localStorage
+
+  const resetUnreadNotes = async () => {
     if (!user || user.unreadNotesCount === 0) return;
-    const updatedUser = { ...user, unreadNotesCount: 0 };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    try {
+      await apiResetUnreadNotes();
+      const updatedUser = { ...user, unreadNotesCount: 0 };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error resetting unread notes:', err);
+    }
   };
 
-  const resetUnreadSaved = () => {
+  const resetUnreadSaved = async () => {
     if (!user || user.unreadSavedCount === 0) return;
-    const updatedUser = { ...user, unreadSavedCount: 0 };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    try {
+      await apiResetUnreadSaved();
+      const updatedUser = { ...user, unreadSavedCount: 0 };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error resetting unread saved:', err);
+    }
   };
 
-  const resetUnreadBookmarks = () => {
+  const resetUnreadBookmarks = async () => {
     if (!user || user.unreadBookmarksCount === 0) return;
-    const updatedUser = { ...user, unreadBookmarksCount: 0 };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    const updatedUsers = users.map(u => u.email === user.email ? updatedUser : u);
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    try {
+      await apiResetUnreadBookmarks();
+      const updatedUser = { ...user, unreadBookmarksCount: 0 };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error resetting unread bookmarks:', err);
+    }
   };
 
-  // Add forum post functionality
-  const addForumPost = (postObj) => {
+  // Forum
+  const addForumPost = async (postObj) => {
     if (!user) return;
-    const newPost = { ...postObj, userName: user.name, userEmail: user.email, id: Date.now(), comments: [] };
-    const updatedPosts = [...forumPosts, newPost];
-    setForumPosts(updatedPosts);
-    localStorage.setItem('forumPosts', JSON.stringify(updatedPosts));
+    try {
+      const newPost = await apiAddForumPost(postObj);
+      setForumPosts(prev => [...prev, newPost]);
+    } catch (err) {
+      console.error('Error adding forum post:', err);
+    }
   };
 
-  const addComment = (postId, commentText) => {
+  const addComment = async (postId, commentText) => {
     if (!user) return;
-    const updatedPosts = forumPosts.map(post => {
-      if (post.id === postId) {
-        const newComment = { userName: user.name, userEmail: user.email, text: commentText, timestamp: new Date().toISOString() };
-        return { ...post, comments: [...post.comments, newComment] };
-      }
-      return post;
-    });
-    setForumPosts(updatedPosts);
-    localStorage.setItem('forumPosts', JSON.stringify(updatedPosts));
+    try {
+      const updatedComments = await apiAddComment(postId, commentText);
+      setForumPosts(prev => prev.map(p => p._id === postId ? { ...p, comments: updatedComments } : p));
+    } catch (err) {
+      console.error('Error adding comment:', err);
+    }
   };
 
-  const deleteForumPost = (postId) => {
+  const deleteForumPost = async (postId) => {
     if (!user) return;
-    const updatedPosts = forumPosts.filter(post => post.id !== postId);
-    setForumPosts(updatedPosts);
-    localStorage.setItem('forumPosts', JSON.stringify(updatedPosts));
+    try {
+      await apiDeleteForumPost(postId);
+      setForumPosts(prev => prev.filter(p => p._id !== postId));
+    } catch (err) {
+      console.error('Error deleting forum post:', err);
+    }
   };
 
-  const deleteComment = (postId, commentIndex) => {
+  const deleteComment = async (postId, commentIndex) => {
     if (!user) return;
-    const updatedPosts = forumPosts.map(post => {
-      if (post.id === postId) {
-        const newComments = [...post.comments];
-        newComments.splice(commentIndex, 1);
-        return { ...post, comments: newComments };
-      }
-      return post;
-    });
-    setForumPosts(updatedPosts);
-    localStorage.setItem('forumPosts', JSON.stringify(updatedPosts));
+    try {
+      await apiDeleteComment(postId, commentIndex);
+      fetchForumPosts(); // Reload to sync
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+    }
   };
 
   return (
@@ -297,14 +246,11 @@ export const AuthProvider = ({ children }) => {
       login,
       logout,
       saveVerse,
-      deleteSavedVerse,
       unsaveVerse,
       addBookmark,
-      deleteBookmark,
       unbookmark,
       highlightVerse,
       addNote,
-      deleteNote,
       resetUnreadNotes,
       resetUnreadSaved,
       resetUnreadBookmarks,
@@ -312,7 +258,7 @@ export const AuthProvider = ({ children }) => {
       addForumPost,
       addComment,
       deleteForumPost,
-      deleteComment
+      deleteComment,
     }}>
       {children}
     </AuthContext.Provider>
