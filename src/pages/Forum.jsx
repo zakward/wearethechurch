@@ -1,12 +1,16 @@
-import React, { useContext, useState } from 'react';
+// ===== Forum.jsx =====
+import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
+import { DbLoadingState, useDbLoading } from '../components/DbLoadingState';
 
 const categories = ['General Discussion', 'Questions', 'Testimonies', 'Bible Study', 'Prayer Requests'];
 
 const Forum = () => {
   const { user, forumPosts, addForumPost, addComment, deleteForumPost, deleteComment } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { isLoading, error, stopLoading, setLoadingError } = useDbLoading();
+  
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState(categories[0]);
@@ -16,6 +20,14 @@ const Forum = () => {
   const [expandedPosts, setExpandedPosts] = useState({});
   const [commentText, setCommentText] = useState({});
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+
+  // Simulate loading forum posts
+  useEffect(() => {
+    if (user && forumPosts !== undefined) {
+      // Once we have user and posts data, stop loading
+      stopLoading();
+    }
+  }, [user, forumPosts]);
 
   if (!user) {
     return (
@@ -69,189 +81,195 @@ const Forum = () => {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
-    <div className="relative container mx-auto px-4 py-8 max-w-7xl">
-      {/* Back Arrow */}
-      <button
-        onClick={() => navigate('/')}
-        className="absolute top-[0px] left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
-        aria-label="Back to Bible Books"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">Community Forum</h1>
-
-      {/* Toggle Button for Create Post Form */}
-      <div className="mb-6 flex justify-center">
+    <DbLoadingState 
+      isLoading={isLoading} 
+      error={error}
+      customMessage="Loading Forum Posts"
+    >
+      <div className="relative container mx-auto px-4 py-8 max-w-7xl">
+        {/* Back Arrow */}
         <button
-          onClick={() => setIsCreatePostOpen(!isCreatePostOpen)}
-          className="bg-primaryBlue text-white py-2 px-4 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-105"
-          aria-expanded={isCreatePostOpen}
-          aria-controls="create-post-form"
+          onClick={() => navigate('/')}
+          className="absolute top-[0px] left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
+          aria-label="Back to Bible Books"
         >
-          {isCreatePostOpen ? 'Hide Create Post' : 'Create New Post'}
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
         </button>
-      </div>
 
-      {/* Add Post Form (Toggleable) */}
-      {isCreatePostOpen && (
-        <div
-          id="create-post-form"
-          className="bg-white p-6 rounded-3xl shadow-xl border-4 border-white mb-8 transition-all duration-300"
-        >
-          <h2 className="text-2xl font-bold mb-4 text-primaryBlue">Create a New Post</h2>
+        <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">Community Forum</h1>
+
+        {/* Toggle Button for Create Post Form */}
+        <div className="mb-6 flex justify-center">
+          <button
+            onClick={() => setIsCreatePostOpen(!isCreatePostOpen)}
+            className="bg-primaryBlue text-white py-2 px-4 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-105"
+            aria-expanded={isCreatePostOpen}
+            aria-controls="create-post-form"
+          >
+            {isCreatePostOpen ? 'Hide Create Post' : 'Create New Post'}
+          </button>
+        </div>
+
+        {/* Add Post Form (Toggleable) */}
+        {isCreatePostOpen && (
+          <div
+            id="create-post-form"
+            className="bg-white p-6 rounded-3xl shadow-xl border-4 border-white mb-8 transition-all duration-300"
+          >
+            <h2 className="text-2xl font-bold mb-4 text-primaryBlue">Create a New Post</h2>
+            <input
+              type="text"
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full p-3 mb-4 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
+              aria-label="Post title"
+            />
+            <textarea
+              placeholder="Content (related to biblical/spiritual journey)"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="w-full p-3 mb-4 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
+              rows="4"
+              aria-label="Post content"
+            />
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full p-3 mb-4 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
+              aria-label="Select post category"
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleAddPost}
+              className="w-full bg-primaryBlue text-white py-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-105"
+              aria-label="Submit new post"
+            >
+              Post
+            </button>
+          </div>
+        )}
+
+        {/* Filters */}
+        <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center">
           <input
             type="text"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 mb-4 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
-            aria-label="Post title"
-          />
-          <textarea
-            placeholder="Content (related to biblical/spiritual journey)"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full p-3 mb-4 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
-            rows="4"
-            aria-label="Post content"
+            placeholder="Search posts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full sm:w-1/3 p-3 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
+            aria-label="Search posts by title or content"
           />
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full p-3 mb-4 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
-            aria-label="Select post category"
+            value={filterTopic}
+            onChange={(e) => setFilterTopic(e.target.value)}
+            className="w-full sm:w-1/4 p-3 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
+            aria-label="Filter posts by topic"
           >
+            <option value="all">All Topics</option>
             {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
             ))}
           </select>
-          <button
-            onClick={handleAddPost}
-            className="w-full bg-primaryBlue text-white py-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-105"
-            aria-label="Submit new post"
+          <select
+            value={filterUser}
+            onChange={(e) => setFilterUser(e.target.value)}
+            className="w-full sm:w-1/4 p-3 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
+            aria-label="Filter posts by user"
           >
-            Post
-          </button>
+            <option value="all">All Users</option>
+            <option value="me">My Posts</option>
+          </select>
         </div>
-      )}
 
-      {/* Filters */}
-      <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center">
-        <input
-          type="text"
-          placeholder="Search posts..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full sm:w-1/3 p-3 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
-          aria-label="Search posts by title or content"
-        />
-        <select
-          value={filterTopic}
-          onChange={(e) => setFilterTopic(e.target.value)}
-          className="w-full sm:w-1/4 p-3 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
-          aria-label="Filter posts by topic"
-        >
-          <option value="all">All Topics</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-        <select
-          value={filterUser}
-          onChange={(e) => setFilterUser(e.target.value)}
-          className="w-full sm:w-1/4 p-3 bg-white border border-secondaryPurple rounded-2xl text-textGray focus:outline-none focus:ring-2 focus:ring-secondaryPurple transition-all duration-300"
-          aria-label="Filter posts by user"
-        >
-          <option value="all">All Users</option>
-          <option value="me">My Posts</option>
-        </select>
-      </div>
-
-      {/* Forum Posts */}
-      {filteredPosts.length === 0 ? (
-        <p className="text-center text-textGray">No posts found.</p>
-      ) : (
-        <div className="space-y-6">
-          {filteredPosts.map((post) => (
-            <div key={post._id} className="bg-white p-6 rounded-2xl shadow-xl border border-secondaryPurple">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="text-xl font-bold text-funPink">{post.title}</h3>
-                <span className="text-xs bg-secondaryPurple text-white px-3 py-1 rounded-full">
-                  {post.category}
-                </span>
-              </div>
-              <p className="text-textGray mt-2">{post.content}</p>
-              <p className="text-textGray text-sm mt-1">
-                Posted by <span className="font-semibold">{post.userName}</span> on {new Date(post.createdAt).toLocaleString()}
-              </p>
-              {post.userEmail === user.email && (
-                <button
-                  onClick={() => deleteForumPost(post._id)}
-                  className="mt-2 bg-red-500 text-white py-1 px-3 rounded-full hover:bg-red-600 transition-all duration-300"
-                  aria-label={`Delete post titled ${post.title}`}
-                >
-                  Delete Post
-                </button>
-              )}
-
-              {/* Comments */}
-              <div className="mt-4">
-                <button
-                  onClick={() => toggleExpandPost(post._id)}
-                  className="text-blue-500 hover:underline"
-                  aria-label={expandedPosts[post._id] ? `Hide comments for ${post.title}` : `View comments for ${post.title}`}
-                >
-                  {expandedPosts[post._id] ? 'Hide Comments' : `View Comments (${post.comments.length})`}
-                </button>
-                {expandedPosts[post._id] && (
-                  <div className="mt-2 space-y-2">
-                    {post.comments.map((comment, index) => (
-                      <div key={index} className="bg-gray-100 p-3 rounded-lg">
-                        <p className="text-textGray">{comment.text}</p>
-                        <p className="text-textGray text-sm">
-                          By <span className="font-semibold">{comment.userName}</span> on {new Date(comment.timestamp).toLocaleString()}
-                        </p>
-                        {comment.userEmail === user.email && (
-                          <button
-                            onClick={() => deleteComment(post._id, index)}
-                            className="mt-1 text-red-500 hover:underline text-sm"
-                            aria-label="Delete comment"
-                          >
-                            Delete Comment
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    <textarea
-                      value={commentText[post._id] || ''}
-                      onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
-                      placeholder="Add a comment..."
-                      className="w-full p-2 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-                      rows="2"
-                      aria-label="Add a comment to post"
-                    />
-                    <button
-                      onClick={() => handleAddComment(post._id)}
-                      className="mt-2 bg-primaryBlue text-white py-1 px-3 rounded-full hover:bg-blue-700 transition-all duration-300"
-                      aria-label="Submit comment"
-                    >
-                      Add Comment
-                    </button>
-                  </div>
+        {/* Forum Posts */}
+        {filteredPosts.length === 0 ? (
+          <p className="text-center text-textGray">No posts found.</p>
+        ) : (
+          <div className="space-y-6">
+            {filteredPosts.map((post) => (
+              <div key={post._id} className="bg-white p-6 rounded-2xl shadow-xl border border-secondaryPurple">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-xl font-bold text-funPink">{post.title}</h3>
+                  <span className="text-xs bg-secondaryPurple text-white px-3 py-1 rounded-full">
+                    {post.category}
+                  </span>
+                </div>
+                <p className="text-textGray mt-2">{post.content}</p>
+                <p className="text-textGray text-sm mt-1">
+                  Posted by <span className="font-semibold">{post.userName}</span> on {new Date(post.createdAt).toLocaleString()}
+                </p>
+                {post.userEmail === user.email && (
+                  <button
+                    onClick={() => deleteForumPost(post._id)}
+                    className="mt-2 bg-red-500 text-white py-1 px-3 rounded-full hover:bg-red-600 transition-all duration-300"
+                    aria-label={`Delete post titled ${post.title}`}
+                  >
+                    Delete Post
+                  </button>
                 )}
+
+                {/* Comments */}
+                <div className="mt-4">
+                  <button
+                    onClick={() => toggleExpandPost(post._id)}
+                    className="text-blue-500 hover:underline"
+                    aria-label={expandedPosts[post._id] ? `Hide comments for ${post.title}` : `View comments for ${post.title}`}
+                  >
+                    {expandedPosts[post._id] ? 'Hide Comments' : `View Comments (${post.comments.length})`}
+                  </button>
+                  {expandedPosts[post._id] && (
+                    <div className="mt-2 space-y-2">
+                      {post.comments.map((comment, index) => (
+                        <div key={index} className="bg-gray-100 p-3 rounded-lg">
+                          <p className="text-textGray">{comment.text}</p>
+                          <p className="text-textGray text-sm">
+                            By <span className="font-semibold">{comment.userName}</span> on {new Date(comment.timestamp).toLocaleString()}
+                          </p>
+                          {comment.userEmail === user.email && (
+                            <button
+                              onClick={() => deleteComment(post._id, index)}
+                              className="mt-1 text-red-500 hover:underline text-sm"
+                              aria-label="Delete comment"
+                            >
+                              Delete Comment
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <textarea
+                        value={commentText[post._id] || ''}
+                        onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
+                        placeholder="Add a comment..."
+                        className="w-full p-2 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                        rows="2"
+                        aria-label="Add a comment to post"
+                      />
+                      <button
+                        onClick={() => handleAddComment(post._id)}
+                        className="mt-2 bg-primaryBlue text-white py-1 px-3 rounded-full hover:bg-blue-700 transition-all duration-300"
+                        aria-label="Submit comment"
+                      >
+                        Add Comment
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </DbLoadingState>
   );
 };
 

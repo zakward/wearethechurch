@@ -1,5 +1,5 @@
 // Updated src/api.js
-// Added updateForumPost and updateComment for full CRUD.
+// Added deleteNote for full CRUD on notes.
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -51,8 +51,7 @@ export const unbookmark = ({ book, chapter, verse }) => apiRequest('/user/unbook
 
 // Notes
 export const addNote = (noteObj) => apiRequest('/user/add-note', 'POST', noteObj);
-// Add deleteNote if implemented in backend
-// export const deleteNote = (index) => apiRequest('/user/delete-note', 'POST', { index });
+export const deleteNote = (index) => apiRequest('/user/delete-note', 'POST', { index });
 
 // Highlight
 export const highlightVerse = ({ book, chapter, verse }) => apiRequest('/user/highlight-verse', 'POST', { book, chapter, verse });
@@ -65,12 +64,13 @@ export const addGoal = (type, target, dueDate) => apiRequest('/user/add-goal', '
 
 // Reset Unread
 export const resetUnreadNotes = () => apiRequest('/user/reset-unread-notes', 'POST');
-export const resetUnreadSaved = () => apiRequest('/user/reset-unread-saved', 'POST'); // Assume added
-export const resetUnreadBookmarks = () => apiRequest('/user/reset-unread-bookmarks', 'POST'); // Assume added
+export const resetUnreadSaved = () => apiRequest('/user/reset-unread-saved', 'POST');
+export const resetUnreadBookmarks = () => apiRequest('/user/reset-unread-bookmarks', 'POST');
 
 // Forum
 export const getForumPosts = () => apiRequest('/forum');
-export const addForumPost = ({ title, content, category }) => apiRequest('/forum', 'POST', { title, content, category });export const updateForumPost = (postId, { title, content }) => apiRequest(`/forum/${postId}`, 'PUT', { title, content });
+export const addForumPost = ({ title, content, category }) => apiRequest('/forum', 'POST', { title, content, category });
+export const updateForumPost = (postId, { title, content }) => apiRequest(`/forum/${postId}`, 'PUT', { title, content });
 export const deleteForumPost = (postId) => apiRequest(`/forum/${postId}`, 'DELETE');
 export const addComment = (postId, text) => apiRequest(`/forum/${postId}/comment`, 'POST', { text });
 export const updateComment = (postId, commentIndex, text) => apiRequest(`/forum/${postId}/comment/${commentIndex}`, 'PUT', { text });

@@ -1,23 +1,25 @@
+// Updated BibleReader.jsx - Add delete note functionality
+
 import React, { useContext, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BibleContext } from '../BibleContext.jsx';
 import { AuthContext } from '../AuthContext.jsx';
 import { ThemeContext } from '../ThemeContext.jsx';
 import { insightsData } from '../data/InsightsData.jsx';
-import { FaPlay, FaPause, FaForward } from 'react-icons/fa'; // For TTS icons
 
 const BibleReader = () => {
   const params = useParams();
   const book = params.book;
   const chapterParam = params.chapter;
   const { currentBibleData, markCompleted, currentTranslation, setCurrentTranslation } = useContext(BibleContext);
-  const { user, saveVerse, highlightVerse, unsaveVerse, addBookmark, unbookmark, addNote } = useContext(AuthContext);
+  const { user, saveVerse, highlightVerse, unsaveVerse, addBookmark, unbookmark, addNote, deleteNote } = useContext(AuthContext);
   const { fontSize, setFontSize, fontFamily, setFontFamily } = useContext(ThemeContext);
   const navigate = useNavigate();
   const [mode, setMode] = useState('light');
   const [activeVerse, setActiveVerse] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [editingNoteIndex, setEditingNoteIndex] = useState(null); // Track which note is being edited
   const [selectedBook, setSelectedBook] = useState(book || '');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [selectedVerse, setSelectedVerse] = useState('');
@@ -31,11 +33,10 @@ const BibleReader = () => {
   useEffect(() => {
     if (book && currentBibleData && currentBibleData[book]) {
       setSelectedBook(book);
-      const initialChapter = chapterParam || '1'; // Default to '1' if no chapter in URL
+      const initialChapter = chapterParam || '1';
       setSelectedChapter(initialChapter);
       setSelectedVerse('');
       setError(null);
-      // If no chapter in URL, navigate to chapter 1
       if (!chapterParam) {
         navigate(`/bible/${book}/1`, { replace: true });
       }
@@ -164,8 +165,11 @@ const BibleReader = () => {
   };
 
   const handleOpenNoteModal = (v) => {
-    const existingNote = user?.notes?.find(n => n.book === book && n.chapter === Number(selectedChapter) && n.verse === Number(v));
+    const existingNoteIndex = user?.notes?.findIndex(n => n.book === book && n.chapter === Number(selectedChapter) && n.verse === Number(v));
+    const existingNote = existingNoteIndex !== -1 ? user.notes[existingNoteIndex] : null;
+    
     setNoteText(existingNote ? existingNote.note : '');
+    setEditingNoteIndex(existingNoteIndex !== -1 ? existingNoteIndex : null);
     setActiveVerse(v);
     setIsNoteModalOpen(true);
   };
@@ -185,10 +189,24 @@ const BibleReader = () => {
       timestamp: new Date().toISOString()
     };
     addNote(noteObj);
-    alert('Note added!');
+    alert('Note saved!');
     setNoteText('');
+    setEditingNoteIndex(null);
     setIsNoteModalOpen(false);
     setActiveVerse(null);
+  };
+
+  const handleDeleteNote = () => {
+    if (editingNoteIndex !== null) {
+      if (window.confirm('Are you sure you want to delete this note?')) {
+        deleteNote(editingNoteIndex);
+        alert('Note deleted!');
+        setNoteText('');
+        setEditingNoteIndex(null);
+        setIsNoteModalOpen(false);
+        setActiveVerse(null);
+      }
+    }
   };
 
   // Handle navigation for book, chapter, and verse
@@ -196,7 +214,7 @@ const BibleReader = () => {
     const newBook = e.target.value;
     if (newBook && currentBibleData[newBook]) {
       setSelectedBook(newBook);
-      setSelectedChapter('1'); // Default to chapter 1 on book change
+      setSelectedChapter('1');
       setSelectedVerse('');
       setError(null);
       navigate(`/bible/${newBook}/1`);
@@ -231,13 +249,13 @@ const BibleReader = () => {
   const speakVerse = () => {
     if (versesArray.length === 0) return;
 
-    window.speechSynthesis.cancel(); // Stop any ongoing speech
+    window.speechSynthesis.cancel();
     const newUtterance = new SpeechSynthesisUtterance(versesArray[currentVerseIndex].text);
     newUtterance.onend = () => {
       if (currentVerseIndex < versesArray.length - 1) {
-        setCurrentVerseIndex(prev => prev + 1); // Auto-advance
+        setCurrentVerseIndex(prev => prev + 1);
       } else {
-        setIsSpeaking(false); // End of chapter
+        setIsSpeaking(false);
       }
     };
     window.speechSynthesis.speak(newUtterance);
@@ -265,8 +283,8 @@ const BibleReader = () => {
         aria-label="Back to Bible Books"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
       </button>
 
       {/* Icon Key */}
@@ -320,25 +338,6 @@ const BibleReader = () => {
                   </option>
                 ))}
             </select>
-          </div>
-          <div className="flex flex-col">
-            {/* <label htmlFor="verse" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Verse</label>
-            <select
-              id="verse"
-              value={selectedVerse}
-              onChange={handleVerseChange}
-              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
-              aria-label="Select verse"
-              disabled={!selectedChapter || !chapterData}
-            >
-              <option value="">Select Verse</option>
-              {chapterData &&
-                Object.keys(chapterData).sort((a, b) => Number(a) - Number(b)).map((v) => (
-                  <option key={v} value={v}>
-                    Verse {v}
-                  </option>
-                ))}
-            </select> */}
           </div>
           <div className="flex flex-col">
             <label htmlFor="mode" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Mode</label>
@@ -412,7 +411,7 @@ const BibleReader = () => {
             const hasInsight = verseInsights[v] || false;
             return (
               <div key={v} className="relative">
-               <p
+                <p
                   id={`verse-${v}`}
                   onClick={() => setActiveVerse(activeVerse === v ? null : v)}
                   className={`${isHighlighted ? (mode === 'dark' || mode === 'high-contrast' ? 'bg-yellow-300 text-black' : mode === 'sepia' ? 'bg-yellow-200 text-[#5F4B32]' : 'bg-yellow-300 text-black') : ''} cursor-pointer select-text flex items-start`}
@@ -515,7 +514,9 @@ const BibleReader = () => {
       {isNoteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className={`w-4/5 max-w-md p-6 rounded-3xl shadow-2xl ${modeClass}`}>
-            <h2 className="text-xl font-bold mb-4 text-primaryBlue dark:text-white">Add Note for {book} {selectedChapter}:{activeVerse}</h2>
+            <h2 className="text-xl font-bold mb-4 text-primaryBlue dark:text-white">
+              {editingNoteIndex !== null ? 'Edit Note' : 'Add Note'} for {book} {selectedChapter}:{activeVerse}
+            </h2>
             <textarea
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
@@ -524,25 +525,37 @@ const BibleReader = () => {
               rows="4"
               aria-label="Enter note for verse"
             />
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                onClick={() => {
-                  setNoteText('');
-                  setIsNoteModalOpen(false);
-                  setActiveVerse(null);
-                }}
-                className="py-2 px-4 rounded-full bg-gray-300 text-gray-800 hover:bg-gray-400"
-                aria-label="Cancel note"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleAddNote(activeVerse)}
-                className="py-2 px-4 rounded-full bg-primaryBlue text-white hover:bg-blue-700"
-                aria-label="Save note"
-              >
-                Save Note
-              </button>
+            <div className="flex justify-between gap-2 mt-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setNoteText('');
+                    setEditingNoteIndex(null);
+                    setIsNoteModalOpen(false);
+                    setActiveVerse(null);
+                  }}
+                  className="py-2 px-4 rounded-full bg-gray-300 text-gray-800 hover:bg-gray-400"
+                  aria-label="Cancel note"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleAddNote(activeVerse)}
+                  className="py-2 px-4 rounded-full bg-primaryBlue text-white hover:bg-blue-700"
+                  aria-label="Save note"
+                >
+                  Save Note
+                </button>
+              </div>
+              {editingNoteIndex !== null && (
+                <button
+                  onClick={handleDeleteNote}
+                  className="py-2 px-4 rounded-full bg-red-500 text-white hover:bg-red-600"
+                  aria-label="Delete note"
+                >
+                  Delete
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -586,4 +599,4 @@ const BibleReader = () => {
   );
 };
 
-export default BibleReader;
+export default BibleReader

@@ -1,8 +1,26 @@
-// Updated src/contexts/AuthProvider.js
-// Implemented highlightVerse to call apiHighlightVerse and update user state/localStorage.
+// ===== 2. FRONTEND: AuthContext.jsx (COMPLETE FILE) =====
 
 import React, { createContext, useState, useEffect } from 'react';
-import { signup as apiSignup, login as apiLogin, getProfile, saveVerse as apiSaveVerse, unsaveVerse as apiUnsaveVerse, addBookmark as apiAddBookmark, unbookmark as apiUnbookmark, addNote as apiAddNote, resetUnreadNotes as apiResetUnreadNotes, resetUnreadSaved as apiResetUnreadSaved, resetUnreadBookmarks as apiResetUnreadBookmarks, getForumPosts, addForumPost as apiAddForumPost, addComment as apiAddComment, deleteForumPost as apiDeleteForumPost, deleteComment as apiDeleteComment, highlightVerse as apiHighlightVerse } from './api'; // Adjust path
+import { 
+  signup as apiSignup, 
+  login as apiLogin, 
+  getProfile, 
+  saveVerse as apiSaveVerse, 
+  unsaveVerse as apiUnsaveVerse, 
+  addBookmark as apiAddBookmark, 
+  unbookmark as apiUnbookmark, 
+  addNote as apiAddNote, 
+  deleteNote as apiDeleteNote,
+  resetUnreadNotes as apiResetUnreadNotes, 
+  resetUnreadSaved as apiResetUnreadSaved, 
+  resetUnreadBookmarks as apiResetUnreadBookmarks, 
+  getForumPosts, 
+  addForumPost as apiAddForumPost, 
+  addComment as apiAddComment, 
+  deleteForumPost as apiDeleteForumPost, 
+  deleteComment as apiDeleteComment, 
+  highlightVerse as apiHighlightVerse 
+} from './api';
 
 export const AuthContext = createContext();
 
@@ -107,8 +125,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Similar for deleteSavedVerse if needed (by index? Use unsave)
-
   const addBookmark = async (bookmarkObj) => {
     if (!user) return;
     try {
@@ -132,8 +148,6 @@ export const AuthProvider = ({ children }) => {
       console.error('Error unbookmarking:', err);
     }
   };
-
-  // Similar for deleteBookmark
 
   const highlightVerse = async (book, chapter, verse) => {
     if (!user) return;
@@ -159,7 +173,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // deleteNote: similar, assume backend route, then update and save to localStorage
+  const deleteNote = async (index) => {
+    if (!user) return;
+    try {
+      const updatedNotes = await apiDeleteNote(index);
+      const updatedUser = { ...user, notes: updatedNotes };
+      setUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error deleting note:', err);
+    }
+  };
 
   const resetUnreadNotes = async () => {
     if (!user || user.unreadNotesCount === 0) return;
@@ -251,6 +275,7 @@ export const AuthProvider = ({ children }) => {
       unbookmark,
       highlightVerse,
       addNote,
+      deleteNote,
       resetUnreadNotes,
       resetUnreadSaved,
       resetUnreadBookmarks,
