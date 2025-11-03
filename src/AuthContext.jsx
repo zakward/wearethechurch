@@ -1,37 +1,62 @@
-// ===== 2. FRONTEND: AuthContext.jsx (COMPLETE FILE) =====
-
+// ===== FRONTEND: AuthContext.jsx (COMPLETE FILE) =====
 import React, { createContext, useState, useEffect } from 'react';
-import { 
-  signup as apiSignup, 
-  login as apiLogin, 
-  getProfile, 
-  saveVerse as apiSaveVerse, 
-  unsaveVerse as apiUnsaveVerse, 
-  addBookmark as apiAddBookmark, 
-  unbookmark as apiUnbookmark, 
-  addNote as apiAddNote, 
+import {
+  signup as apiSignup,
+  login as apiLogin,
+  getProfile,
+  saveVerse as apiSaveVerse,
+  unsaveVerse as apiUnsaveVerse,
+  addBookmark as apiAddBookmark,
+  unbookmark as apiUnbookmark,
+  addNote as apiAddNote,
   deleteNote as apiDeleteNote,
-  resetUnreadNotes as apiResetUnreadNotes, 
-  resetUnreadSaved as apiResetUnreadSaved, 
-  resetUnreadBookmarks as apiResetUnreadBookmarks, 
-  getForumPosts, 
-  addForumPost as apiAddForumPost, 
-  addComment as apiAddComment, 
-  deleteForumPost as apiDeleteForumPost, 
-  deleteComment as apiDeleteComment, 
-  highlightVerse as apiHighlightVerse 
+  resetUnreadNotes as apiResetUnreadNotes,
+  resetUnreadSaved as apiResetUnreadSaved,
+  resetUnreadBookmarks as apiResetUnreadBookmarks,
+  getForumPosts,
+  addForumPost as apiAddForumPost,
+  addComment as apiAddComment,
+  deleteForumPost as apiDeleteForumPost,
+  deleteComment as apiDeleteComment,
+  highlightVerse as apiHighlightVerse,
 } from './api';
 
 export const AuthContext = createContext();
+
+const defaultReaderSettings = {
+  // Persisted reader preferences
+  mode: 'light',          // 'light' | 'dark' | 'sepia' | 'high-contrast'
+  fontSize: 'base',       // 'base' | 'lg' | 'xl'
+  fontFamily: 'friendly', // 'friendly' | 'serif' | 'sans'
+  version: 'NIV',         // Bible translation/version
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [forumPosts, setForumPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // NEW: Reader settings persisted in localStorage
+  const [readerSettings, setReaderSettings] = useState(defaultReaderSettings);
+
   useEffect(() => {
     const loadUser = async () => {
-      if (typeof window === 'undefined') return setLoading(false);
+      if (typeof window === 'undefined') {
+        setLoading(false);
+        return;
+      }
+
+      // Load persisted reader settings ASAP for instant UX
+      const storedSettings = localStorage.getItem('readerSettings');
+      if (storedSettings) {
+        try {
+          const parsed = JSON.parse(storedSettings);
+          setReaderSettings(prev => ({ ...prev, ...parsed }));
+        } catch (e) {
+          console.error('Failed to parse readerSettings from localStorage:', e);
+        }
+      }
+
       const token = localStorage.getItem('token');
       if (token) {
         // Load cached user for quick render
@@ -53,11 +78,24 @@ export const AuthProvider = ({ children }) => {
           // Keep cached if API fails (e.g., offline)
         }
       }
+
       setLoading(false);
     };
+
     loadUser();
     fetchForumPosts();
   }, []);
+
+  // Persist readerSettings whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('readerSettings', JSON.stringify(readerSettings));
+      } catch (e) {
+        console.error('Failed to save readerSettings to localStorage:', e);
+      }
+    }
+  }, [readerSettings]);
 
   const fetchForumPosts = async () => {
     try {
@@ -70,7 +108,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (name, email, password) => {
     try {
-      const { token, user: newUser } = await apiSignup(name, email, password);
+      const { token } = await apiSignup(name, email, password);
       localStorage.setItem('token', token);
       console.log('Token saved during signup:', token);
       // Fetch full profile after signup
@@ -84,7 +122,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const { token, user: loggedUser } = await apiLogin(email, password);
+      const { token } = await apiLogin(email, password);
       localStorage.setItem('token', token);
       console.log('Token saved during login:', token);
       const profile = await getProfile(); // Fetch full profile
@@ -99,13 +137,18 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
+    // Keep readerSettings in localStorage so preferences persist even when logged out
   };
 
   const saveVerse = async (verseObj) => {
     if (!user) return;
     try {
       const updatedSaved = await apiSaveVerse(verseObj);
-      const updatedUser = { ...user, savedVerses: updatedSaved, unreadSavedCount: (user.unreadSavedCount || 0) + 1 };
+      const updatedUser = {
+        ...user,
+        savedVerses: updatedSaved,
+        unreadSavedCount: (user.unreadSavedCount || 0) + 1,
+      };
       setUser(updatedUser);
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
     } catch (err) {
@@ -129,7 +172,11 @@ export const AuthProvider = ({ children }) => {
     if (!user) return;
     try {
       const updatedBookmarks = await apiAddBookmark(bookmarkObj);
-      const updatedUser = { ...user, bookmarks: updatedBookmarks, unreadBookmarksCount: (user.unreadBookmarksCount || 0) + 1 };
+      const updatedUser = {
+        ...user,
+        bookmarks: updatedBookmarks,
+        unreadBookmarksCount: (user.unreadBookmarksCount || 0) + 1,
+      };
       setUser(updatedUser);
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
     } catch (err) {
@@ -165,7 +212,11 @@ export const AuthProvider = ({ children }) => {
     if (!user) return;
     try {
       const updatedNotes = await apiAddNote(noteObj);
-      const updatedUser = { ...user, notes: updatedNotes, unreadNotesCount: (user.unreadNotesCount || 0) + 1 };
+      const updatedUser = {
+        ...user,
+        notes: updatedNotes,
+        unreadNotesCount: (user.unreadNotesCount || 0) + 1,
+      };
       setUser(updatedUser);
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
     } catch (err) {
@@ -236,7 +287,7 @@ export const AuthProvider = ({ children }) => {
     if (!user) return;
     try {
       const updatedComments = await apiAddComment(postId, commentText);
-      setForumPosts(prev => prev.map(p => p._id === postId ? { ...p, comments: updatedComments } : p));
+      setForumPosts(prev => prev.map(p => (p._id === postId ? { ...p, comments: updatedComments } : p)));
     } catch (err) {
       console.error('Error adding comment:', err);
     }
@@ -262,29 +313,42 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // NEW: Helper to update reader settings
+  const updateReaderSettings = (partial) => {
+    setReaderSettings(prev => ({ ...prev, ...partial }));
+  };
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      signup,
-      login,
-      logout,
-      saveVerse,
-      unsaveVerse,
-      addBookmark,
-      unbookmark,
-      highlightVerse,
-      addNote,
-      deleteNote,
-      resetUnreadNotes,
-      resetUnreadSaved,
-      resetUnreadBookmarks,
-      forumPosts,
-      addForumPost,
-      addComment,
-      deleteForumPost,
-      deleteComment,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        // auth
+        signup,
+        login,
+        logout,
+        // reader settings
+        readerSettings,
+        updateReaderSettings,
+        // verses
+        saveVerse,
+        unsaveVerse,
+        addBookmark,
+        unbookmark,
+        highlightVerse,
+        addNote,
+        deleteNote,
+        resetUnreadNotes,
+        resetUnreadSaved,
+        resetUnreadBookmarks,
+        // forum
+        forumPosts,
+        addForumPost,
+        addComment,
+        deleteForumPost,
+        deleteComment,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

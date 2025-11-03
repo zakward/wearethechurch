@@ -1,40 +1,73 @@
-// Updated BibleReader.jsx - Add delete note functionality
-
+// ===== FRONTEND: BibleReader.jsx (FIXED VERSION) =====
 import React, { useContext, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BibleContext } from '../BibleContext.jsx';
 import { AuthContext } from '../AuthContext.jsx';
-import { ThemeContext } from '../ThemeContext.jsx';
-import { insightsData } from '../data/InsightsData.jsx';
+import { insightsData } from '../data/InsightsData.js';
 
 const BibleReader = () => {
   const params = useParams();
   const book = params.book;
   const chapterParam = params.chapter;
-  const { currentBibleData, markCompleted, currentTranslation, setCurrentTranslation } = useContext(BibleContext);
-  const { user, saveVerse, highlightVerse, unsaveVerse, addBookmark, unbookmark, addNote, deleteNote } = useContext(AuthContext);
-  const { fontSize, setFontSize, fontFamily, setFontFamily } = useContext(ThemeContext);
+
+  const {
+    currentBibleData,
+    markCompleted,
+    currentTranslation,
+    setCurrentTranslation,
+  } = useContext(BibleContext);
+
+  const {
+    user,
+    saveVerse,
+    highlightVerse,
+    unsaveVerse,
+    addBookmark,
+    unbookmark,
+    addNote,
+    deleteNote,
+    readerSettings,
+    updateReaderSettings,
+    loading, // Add this to check if settings are loaded
+  } = useContext(AuthContext);
+
   const navigate = useNavigate();
-  const [mode, setMode] = useState('light');
+
+  /* -------------------- local UI state -------------------- */
   const [activeVerse, setActiveVerse] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
-  const [editingNoteIndex, setEditingNoteIndex] = useState(null); // Track which note is being edited
+  const [editingNoteIndex, setEditingNoteIndex] = useState(null);
   const [selectedBook, setSelectedBook] = useState(book || '');
   const [selectedChapter, setSelectedChapter] = useState('');
   const [selectedVerse, setSelectedVerse] = useState('');
   const [error, setError] = useState(null);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [utterance, setUtterance] = useState(null);
-  const [speechSupported, setSpeechSupported] = useState('speechSynthesis' in window);
 
-  // Sync selectedBook and selectedChapter with URL params, default to chapter 1 if no chapter
+  const speechSupported =
+    typeof window !== 'undefined' && 'speechSynthesis' in window;
+
+  /* ---------- FIXED: Sync translation only once on mount ---------- */
+  useEffect(() => {
+    if (readerSettings?.version && !loading) {
+      setCurrentTranslation(readerSettings.version);
+    }
+  }, []); // Empty deps - only run once on mount
+
+  /* ---------- Listen for settings changes after mount ---------- */
+  useEffect(() => {
+    if (readerSettings?.version && currentTranslation !== readerSettings.version) {
+      setCurrentTranslation(readerSettings.version);
+    }
+  }, [readerSettings?.version]);
+
+  /* ------------- sync URL → component state on load ------------- */
   useEffect(() => {
     if (book && currentBibleData && currentBibleData[book]) {
       setSelectedBook(book);
-      const initialChapter = chapterParam || '1';
-      setSelectedChapter(initialChapter);
+      const chap = chapterParam || '1';
+      setSelectedChapter(chap);
       setSelectedVerse('');
       setError(null);
       if (!chapterParam) {
@@ -45,33 +78,30 @@ const BibleReader = () => {
     }
   }, [book, chapterParam, currentBibleData, navigate]);
 
-  // TTS Logic
-  useEffect(() => {
-    if (speechSupported && isSpeaking && verses.length > 0) {
-      speakVerse();
-    }
-    return () => {
-      if (speechSupported) window.speechSynthesis.cancel();
-    };
-  }, [currentVerseIndex, isSpeaking]);
+  /* ----------------------- data helpers ----------------------- */
+  const bookData =
+    currentBibleData && selectedBook in currentBibleData
+      ? currentBibleData[selectedBook]
+      : null;
+  const chapterData =
+    bookData && selectedChapter in bookData ? bookData[selectedChapter] : null;
 
-  // Validate book and chapter
-  const bookData = currentBibleData && selectedBook in currentBibleData ? currentBibleData[selectedBook] : null;
-  const chapterData = bookData && selectedChapter in bookData ? bookData[selectedChapter] : null;
+  const verses = chapterData
+    ? Object.keys(chapterData).sort((a, b) => Number(a) - Number(b))
+    : [];
 
-  const verses = chapterData ? Object.keys(chapterData).sort((a, b) => Number(a) - Number(b)) : [];
-  const versesArray = verses.map(v => ({ number: v, text: chapterData ? chapterData[v] : '' }));
-
-  // Map verses to insights for inline links
+  /* -------------------- insight mapping -------------------- */
   const verseInsights = {};
-  const addInsightsToVerses = (section, tab) => {
+  const addInsights = (section, tab) => {
     section.forEach((item) => {
       item.verseReferences.forEach((ref) => {
-        const [refBook, chapterVerse] = ref.split(' ');
-        const [refChapter, refVerse] = chapterVerse.includes(':') ? chapterVerse.split(':') : [chapterVerse, null];
-        if (refBook === book && refChapter === selectedChapter) {
-          const verseRange = refVerse ? refVerse.split('-').map(Number) : [Number(refVerse)];
-          verseRange.forEach((v) => {
+        const [refBook, chapVerse] = ref.split(' ');
+        const [refChap, refVerse] = chapVerse.includes(':')
+          ? chapVerse.split(':')
+          : [chapVerse, null];
+        if (refBook === book && refChap === selectedChapter) {
+          const range = refVerse ? refVerse.split('-').map(Number) : [];
+          (range.length ? range : [Number(refVerse)]).forEach((v) => {
             if (!verseInsights[v]) verseInsights[v] = [];
             verseInsights[v].push({ id: item.id, title: item.title, tab });
           });
@@ -79,519 +109,540 @@ const BibleReader = () => {
       });
     });
   };
-  addInsightsToVerses(insightsData.parablesTeachings, 'parablesTeachings');
-  addInsightsToVerses(insightsData.historicalEvents, 'historicalEvents');
-  addInsightsToVerses(insightsData.lineages, 'lineages');
+  addInsights(insightsData.parablesTeachings, 'parablesTeachings');
+  addInsights(insightsData.historicalEvents, 'historicalEvents');
+  addInsights(insightsData.lineages, 'lineages');
 
-  const sizeClass = fontSize === 'base' ? 'text-base' : fontSize === 'lg' ? 'text-lg' : 'text-xl';
-  const familyClass = fontFamily === 'friendly' ? 'font-friendly' : fontFamily === 'serif' ? 'font-serif' : 'font-sans';
+  /* ---------------------- theme classes ---------------------- */
+  // FIXED: Provide default values directly if readerSettings is undefined
+  const mode = readerSettings?.mode || 'light';
+  const fontSize = readerSettings?.fontSize || 'base';
+  const fontFamily = readerSettings?.fontFamily || 'friendly';
 
+  const sizeClass =
+    fontSize === 'base' ? 'text-base' : fontSize === 'lg' ? 'text-lg' : 'text-xl';
+  const familyClass =
+    fontFamily === 'friendly'
+      ? 'font-friendly'
+      : fontFamily === 'serif'
+      ? 'font-serif'
+      : 'font-sans';
+
+  /* dynamic palette */
   let modeClass = 'bg-white text-textGray';
   let dropdownClass = 'bg-white text-gray-800 shadow-md';
   let hoverClass = 'hover:bg-gray-100';
-  let savedIndicatorColor = 'text-blue-500';
-  let bookmarkIndicatorColor = 'text-red-500';
-  let noteIndicatorColor = 'text-green-500';
-  let insightIndicatorColor = 'text-purple-500';
-  let keyTextColor = 'text-primaryBlue';
+  let savedColor = 'text-blue-500';
+  let bookmarkColor = 'text-red-500';
+  let noteColor = 'text-green-500';
+  let insightColor = 'text-purple-500';
+  let keyText = 'text-primaryBlue';
+
   if (mode === 'dark') {
     modeClass = 'bg-gray-800 text-gray-200';
     dropdownClass = 'bg-gray-800 text-gray-200 shadow-lg shadow-gray-900/50';
     hoverClass = 'hover:bg-gray-700';
-    savedIndicatorColor = 'text-blue-300';
-    bookmarkIndicatorColor = 'text-red-300';
-    noteIndicatorColor = 'text-green-300';
-    insightIndicatorColor = 'text-purple-300';
-    keyTextColor = 'text-white';
+    savedColor = 'text-blue-300';
+    bookmarkColor = 'text-red-300';
+    noteColor = 'text-green-300';
+    insightColor = 'text-purple-300';
+    keyText = 'text-white';
   } else if (mode === 'sepia') {
     modeClass = 'bg-[#FBF0D9] text-[#5F4B32]';
     dropdownClass = 'bg-[#FBF0D9] text-[#5F4B32] shadow-md shadow-[#5F4B32]/20';
     hoverClass = 'hover:bg-[#E8D9B8]';
-    savedIndicatorColor = 'text-[#3F2B1E]';
-    bookmarkIndicatorColor = 'text-[#8B4513]';
-    noteIndicatorColor = 'text-[#2E8B57]';
-    insightIndicatorColor = 'text-[#4B0082]';
-    keyTextColor = 'text-[#5F4B32]';
+    savedColor = 'text-[#3F2B1E]';
+    bookmarkColor = 'text-[#8B4513]';
+    noteColor = 'text-[#2E8B57]';
+    insightColor = 'text-[#4B0082]';
+    keyText = 'text-[#5F4B32]';
   } else if (mode === 'high-contrast') {
     modeClass = 'bg-black text-yellow-300';
     dropdownClass = 'bg-black text-yellow-300 shadow-md shadow-white/10';
     hoverClass = 'hover:bg-gray-900';
-    savedIndicatorColor = 'text-yellow-500';
-    bookmarkIndicatorColor = 'text-red-400';
-    noteIndicatorColor = 'text-green-400';
-    insightIndicatorColor = 'text-purple-400';
-    keyTextColor = 'text-yellow-300';
+    savedColor = 'text-yellow-500';
+    bookmarkColor = 'text-red-400';
+    noteColor = 'text-green-400';
+    insightColor = 'text-purple-400';
+    keyText = 'text-yellow-300';
   }
 
-  const handleSave = (v) => {
-    const text = chapterData[v];
-    const verseObj = { book, chapter: Number(selectedChapter), verse: Number(v), text, translation: currentTranslation, timestamp: new Date().toISOString() };
-    saveVerse(verseObj);
-    alert('Verse saved!');
-    setActiveVerse(null);
-  };
-
-  const handleShare = (v) => {
-    const shareText = `${book} ${selectedChapter}:${v} "${chapterData[v]}" (${currentTranslation})`;
-    navigator.clipboard.writeText(shareText).then(() => {
-      alert('Verse copied to clipboard!');
-    });
-    setActiveVerse(null);
-  };
-
-  const handleHighlight = (v) => {
-    highlightVerse(book, Number(selectedChapter), Number(v));
-    setActiveVerse(null);
-  };
-
-  const handleUnsave = (v) => {
-    unsaveVerse(book, Number(selectedChapter), Number(v));
-    alert('Verse unsaved!');
-    setActiveVerse(null);
-  };
-
-  const handleBookmark = (v) => {
-    const text = chapterData[v];
-    const obj = { book, chapter: Number(selectedChapter), verse: Number(v), text, translation: currentTranslation, timestamp: new Date().toISOString() };
-    const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(selectedChapter) && b.verse === Number(v)) || false;
-    if (isBookmarked) {
-      unbookmark(book, Number(selectedChapter), Number(v));
-      alert('Bookmark removed!');
-    } else {
-      addBookmark(obj);
-      alert('Bookmark added!');
-    }
-    setActiveVerse(null);
-  };
-
+  /* ------------------ note handlers ------------------ */
   const handleOpenNoteModal = (v) => {
-    const existingNoteIndex = user?.notes?.findIndex(n => n.book === book && n.chapter === Number(selectedChapter) && n.verse === Number(v));
-    const existingNote = existingNoteIndex !== -1 ? user.notes[existingNoteIndex] : null;
-    
-    setNoteText(existingNote ? existingNote.note : '');
-    setEditingNoteIndex(existingNoteIndex !== -1 ? existingNoteIndex : null);
-    setActiveVerse(v);
+    const existingNote = user?.notes?.find(
+      (n) =>
+        n.book === book &&
+        n.chapter === Number(selectedChapter) &&
+        n.verse === Number(v)
+    );
+    if (existingNote) {
+      setNoteText(existingNote.text);
+      const idx = user.notes.indexOf(existingNote);
+      setEditingNoteIndex(idx);
+    } else {
+      setNoteText('');
+      setEditingNoteIndex(null);
+    }
     setIsNoteModalOpen(true);
   };
 
-  const handleAddNote = (v) => {
+  const handleAddNote = async (v) => {
     if (!noteText.trim()) {
-      alert('Note cannot be empty!');
+      alert('Note cannot be empty');
       return;
     }
-    const noteObj = {
+    if (editingNoteIndex !== null) {
+      // Edit existing note
+      await deleteNote(editingNoteIndex);
+    }
+    await addNote({
       book,
       chapter: Number(selectedChapter),
       verse: Number(v),
-      text: chapterData[v],
-      note: noteText,
-      translation: currentTranslation,
-      timestamp: new Date().toISOString()
-    };
-    addNote(noteObj);
-    alert('Note saved!');
+      text: noteText,
+      timestamp: new Date().toISOString(),
+    });
     setNoteText('');
     setEditingNoteIndex(null);
     setIsNoteModalOpen(false);
     setActiveVerse(null);
   };
 
-  const handleDeleteNote = () => {
+  const handleDeleteNote = async () => {
     if (editingNoteIndex !== null) {
-      if (window.confirm('Are you sure you want to delete this note?')) {
-        deleteNote(editingNoteIndex);
-        alert('Note deleted!');
-        setNoteText('');
-        setEditingNoteIndex(null);
-        setIsNoteModalOpen(false);
-        setActiveVerse(null);
-      }
+      await deleteNote(editingNoteIndex);
+      setNoteText('');
+      setEditingNoteIndex(null);
+      setIsNoteModalOpen(false);
+      setActiveVerse(null);
     }
   };
 
-  // Handle navigation for book, chapter, and verse
-  const handleBookChange = (e) => {
-    const newBook = e.target.value;
-    if (newBook && currentBibleData[newBook]) {
-      setSelectedBook(newBook);
-      setSelectedChapter('1');
-      setSelectedVerse('');
-      setError(null);
-      navigate(`/bible/${newBook}/1`);
+  /* ------------------ handlers (save/etc.) ------------------ */
+  const handleSave = (v) => {
+    const text = chapterData[v];
+    saveVerse({
+      book,
+      chapter: Number(selectedChapter),
+      verse: Number(v),
+      text,
+      translation: currentTranslation,
+      timestamp: new Date().toISOString(),
+    });
+    alert('Verse saved!');
+    setActiveVerse(null);
+  };
+
+  const handleShare = (v) => {
+    const share = `${book} ${selectedChapter}:${v} "${chapterData[v]}" (${currentTranslation})`;
+    navigator.clipboard.writeText(share).then(() => alert('Verse copied!'));
+    setActiveVerse(null);
+  };
+
+  const handleBookmark = (v) => {
+    const exists =
+      user?.bookmarks?.some(
+        (b) =>
+          b.book === book &&
+          b.chapter === Number(selectedChapter) &&
+          b.verse === Number(v)
+      ) || false;
+    if (exists) {
+      unbookmark(book, Number(selectedChapter), Number(v));
+      alert('Bookmark removed!');
     } else {
-      setError('Invalid book selected.');
+      addBookmark({
+        book,
+        chapter: Number(selectedChapter),
+        verse: Number(v),
+        text: chapterData[v],
+        translation: currentTranslation,
+        timestamp: new Date().toISOString(),
+      });
+      alert('Bookmark added!');
     }
+    setActiveVerse(null);
   };
 
-  const handleChapterChange = (e) => {
-    const newChapter = e.target.value;
-    if (newChapter && bookData && bookData[newChapter]) {
-      setSelectedChapter(newChapter);
-      setSelectedVerse('');
-      setError(null);
-      navigate(`/bible/${selectedBook}/${newChapter}`);
-    } else {
-      setError('Invalid chapter selected.');
-    }
-  };
-
-  const handleVerseChange = (e) => {
-    const newVerse = e.target.value;
-    if (newVerse && chapterData && chapterData[newVerse]) {
-      setSelectedVerse(newVerse);
-      setError(null);
-      navigate(`/bible/${selectedBook}/${selectedChapter}#verse-${newVerse}`);
-    } else {
-      setError('Invalid verse selected.');
-    }
-  };
-
-  const speakVerse = () => {
-    if (versesArray.length === 0) return;
-
-    window.speechSynthesis.cancel();
-    const newUtterance = new SpeechSynthesisUtterance(versesArray[currentVerseIndex].text);
-    newUtterance.onend = () => {
-      if (currentVerseIndex < versesArray.length - 1) {
-        setCurrentVerseIndex(prev => prev + 1);
-      } else {
-        setIsSpeaking(false);
-      }
-    };
-    window.speechSynthesis.speak(newUtterance);
-    setUtterance(newUtterance);
-  };
-
-  // Icon Key Data
-  const iconKey = [
-    { icon: '⭐', label: 'Saved Verse', color: savedIndicatorColor, description: 'Marks a verse you saved to view later.' },
-    { icon: '📝', label: 'Note', color: noteIndicatorColor, description: 'Shows you added a personal note to this verse.' },
-    { icon: '🔖', label: 'Bookmark', color: bookmarkIndicatorColor, description: 'Marks a verse for quick access.' },
-    { icon: '📖', label: 'Insight', color: insightIndicatorColor, description: 'Links to educational info about this verse.' }
-  ];
-
-  if (!currentBibleData) {
+  /* -------------------- UI rendering -------------------- */
+  if (!currentBibleData)
     return <div className="text-center p-8">Loading Bible data...</div>;
-  }
 
   return (
-    <div className={`relative p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-white ${modeClass} ${sizeClass} ${familyClass}`}>
-      {/* Back Arrow */}
+    <div
+      className={`relative p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-white ${modeClass} ${sizeClass} ${familyClass}`}
+    >
+      {/* back arrow */}
       <button
         onClick={() => navigate('/bible')}
         className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
         aria-label="Back to Bible Books"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
       </button>
 
-      {/* Icon Key */}
-      <div className={`mb-6 mt-[40px] p-4 rounded-2xl shadow-xl border border-secondaryPurple ${modeClass}`}>
-        <h2 className={`text-lg font-bold mb-3 ${keyTextColor}`}>Icon Key</h2>
+      {/* icon key */}
+      <div
+        className={`mb-6 mt-[40px] p-4 rounded-2xl shadow-xl border border-secondaryPurple ${modeClass}`}
+      >
+        <h2 className={`text-lg font-bold mb-3 ${keyText}`}>Icon Key</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {iconKey.map((item, index) => (
-            <div key={index} className="flex items-center space-x-2" title={item.description}>
-              <span className={`text-lg ${item.color}`}>{item.icon}</span>
-              <span className={`text-sm ${keyTextColor}`}>{item.label}</span>
+          {[
+            { icon: '⭐', label: 'Saved', color: savedColor },
+            { icon: '📝', label: 'Note', color: noteColor },
+            { icon: '🔖', label: 'Bookmark', color: bookmarkColor },
+            { icon: '📖', label: 'Insight', color: insightColor },
+          ].map((it, i) => (
+            <div key={i} className="flex items-center space-x-2">
+              <span className={`text-lg ${it.color}`}>{it.icon}</span>
+              <span className={`text-sm ${keyText}`}>{it.label}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Controls and Header */}
+      {/* controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+        {/* selectors */}
         <div className="flex flex-wrap gap-4">
-          <div className="flex flex-col">
-            <label htmlFor="book" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Book</label>
-            <select
-              id="book"
-              value={selectedBook}
-              onChange={handleBookChange}
-              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
-              aria-label="Select book"
-            >
-              <option value="">Select Book</option>
-              {Object.keys(currentBibleData).sort().map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="chapter" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Chapter</label>
-            <select
-              id="chapter"
-              value={selectedChapter}
-              onChange={handleChapterChange}
-              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
-              aria-label="Select chapter"
-              disabled={!selectedBook || !bookData}
-            >
-              <option value="">Select Chapter</option>
-              {bookData &&
-                Object.keys(bookData).sort((a, b) => Number(a) - Number(b)).map((ch) => (
-                  <option key={ch} value={ch}>
-                    Chapter {ch}
-                  </option>
-                ))}
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="mode" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Mode</label>
-            <select
-              id="mode"
-              value={mode}
-              onChange={(e) => setMode(e.target.value)}
-              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
-              aria-label="Select display mode"
-            >
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="sepia">Sepia</option>
-              <option value="high-contrast">High Contrast</option>
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="fontSize" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Font Size</label>
-            <select
-              id="fontSize"
-              value={fontSize}
-              onChange={(e) => setFontSize(e.target.value)}
-              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
-              aria-label="Select font size"
-            >
-              <option value="base">Base (16px)</option>
-              <option value="lg">Large (18px)</option>
-              <option value="xl">X-Large (20px)</option>
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="fontFamily" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Font Style</label>
-            <select
-              id="fontFamily"
-              value={fontFamily}
-              onChange={(e) => setFontFamily(e.target.value)}
-              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
-              aria-label="Select font style"
-            >
-              <option value="friendly">Friendly (Fredoka)</option>
-              <option value="serif">Serif (Times)</option>
-              <option value="sans">Sans-serif (Arial)</option>
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="translation" className="text-sm font-medium text-primaryBlue dark:text-white mb-1">Translation</label>
-            <select
-              id="translation"
-              value={currentTranslation}
-              onChange={(e) => setCurrentTranslation(e.target.value)}
-              className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
-              aria-label="Select Bible translation"
-            >
-              <option value="NIV">NIV</option>
-              <option value="KJV">KJV</option>
-            </select>
-          </div>
+          {/* Book */}
+          <Selector
+            id="book"
+            label="Book"
+            value={selectedBook}
+            onChange={(e) => {
+              const b = e.target.value;
+              if (b && currentBibleData[b]) {
+                navigate(`/bible/${b}/1`);
+              }
+            }}
+            options={Object.keys(currentBibleData).sort().map((b) => ({
+              value: b,
+              text: b,
+            }))}
+            disabled={false}
+            modeClass={modeClass}
+          />
+          {/* Chapter */}
+          <Selector
+            id="chapter"
+            label="Chapter"
+            value={selectedChapter}
+            onChange={(e) => {
+              const ch = e.target.value;
+              if (ch && bookData && bookData[ch]) {
+                navigate(`/bible/${selectedBook}/${ch}`);
+              }
+            }}
+            options={
+              bookData
+                ? Object.keys(bookData)
+                    .sort((a, b) => Number(a) - Number(b))
+                    .map((c) => ({ value: c, text: `Chapter ${c}` }))
+                : []
+            }
+            disabled={!bookData}
+            modeClass={modeClass}
+          />
+          {/* Mode */}
+          <Selector
+            id="mode"
+            label="Mode"
+            value={mode}
+            onChange={(e) => updateReaderSettings({ mode: e.target.value })}
+            options={[
+              { value: 'light', text: 'Light' },
+              { value: 'dark', text: 'Dark' },
+              { value: 'sepia', text: 'Sepia' },
+              { value: 'high-contrast', text: 'High Contrast' },
+            ]}
+            modeClass={modeClass}
+          />
+          {/* Font size */}
+          <Selector
+            id="fontSize"
+            label="Font Size"
+            value={fontSize}
+            onChange={(e) => updateReaderSettings({ fontSize: e.target.value })}
+            options={[
+              { value: 'base', text: 'Base (16px)' },
+              { value: 'lg', text: 'Large (18px)' },
+              { value: 'xl', text: 'X-Large (20px)' },
+            ]}
+            modeClass={modeClass}
+          />
+          {/* Font family */}
+          <Selector
+            id="fontFamily"
+            label="Font Style"
+            value={fontFamily}
+            onChange={(e) =>
+              updateReaderSettings({ fontFamily: e.target.value })
+            }
+            options={[
+              { value: 'friendly', text: 'Friendly (Fredoka)' },
+              { value: 'serif', text: 'Serif (Times)' },
+              { value: 'sans', text: 'Sans-serif (Arial)' },
+            ]}
+            modeClass={modeClass}
+          />
+          {/* Translation */}
+          <Selector
+            id="translation"
+            label="Translation"
+            value={readerSettings?.version || 'NIV'}
+            onChange={(e) => {
+              const v = e.target.value;
+              updateReaderSettings({ version: v });
+              setCurrentTranslation(v);
+            }}
+            options={[
+              { value: 'NIV', text: 'NIV' },
+              { value: 'KJV', text: 'KJV' },
+            ]}
+            modeClass={modeClass}
+          />
         </div>
-        <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">{book} {selectedChapter}</h1>
+
+        <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">
+          {book} {selectedChapter}
+        </h1>
       </div>
-      {error && <p className="text-center text-red-500 dark:text-red-300 mb-4">{error}</p>}
-      {!chapterData ? (
-        <p className="text-center text-textGray">Loading chapter...</p>
-      ) : (
-        <div className={`space-y-2 sm:space-y-4 p-2 sm:p-4 rounded-md ${modeClass}`}>
+
+      {/* error */}
+      {error && (
+        <p className="text-center text-red-500 dark:text-red-300 mb-4">
+          {error}
+        </p>
+      )}
+
+      {/* verses */}
+      {chapterData ? (
+        <div
+          className={`space-y-2 sm:space-y-4 p-2 sm:p-4 rounded-md ${modeClass}`}
+        >
           {verses.map((v) => {
-            const isHighlighted = user?.highlightedVerses?.some(h => h.book === book && h.chapter === Number(selectedChapter) && h.verse === Number(v)) || false;
-            const isSaved = user?.savedVerses?.some(s => s.book === book && s.chapter === Number(selectedChapter) && s.verse === Number(v)) || false;
-            const isBookmarked = user?.bookmarks?.some(b => b.book === book && b.chapter === Number(selectedChapter) && b.verse === Number(v)) || false;
-            const hasNote = user?.notes?.some(n => n.book === book && n.chapter === Number(selectedChapter) && n.verse === Number(v)) || false;
-            const hasInsight = verseInsights[v] || false;
+            const highlight =
+              user?.highlightedVerses?.some(
+                (h) =>
+                  h.book === book &&
+                  h.chapter === Number(selectedChapter) &&
+                  h.verse === Number(v)
+              ) || false;
+            const saved =
+              user?.savedVerses?.some(
+                (s) =>
+                  s.book === book &&
+                  s.chapter === Number(selectedChapter) &&
+                  s.verse === Number(v)
+              ) || false;
+            const bookmarked =
+              user?.bookmarks?.some(
+                (b) =>
+                  b.book === book &&
+                  b.chapter === Number(selectedChapter) &&
+                  b.verse === Number(v)
+              ) || false;
+            const noted =
+              user?.notes?.some(
+                (n) =>
+                  n.book === book &&
+                  n.chapter === Number(selectedChapter) &&
+                  n.verse === Number(v)
+              ) || false;
+
+            const insight =
+              Array.isArray(verseInsights[v]) && verseInsights[v].length
+                ? verseInsights[v][0]
+                : null;
+
             return (
               <div key={v} className="relative">
+                {/* verse line */}
                 <p
                   id={`verse-${v}`}
-                  onClick={() => setActiveVerse(activeVerse === v ? null : v)}
-                  className={`${isHighlighted ? (mode === 'dark' || mode === 'high-contrast' ? 'bg-yellow-300 text-black' : mode === 'sepia' ? 'bg-yellow-200 text-[#5F4B32]' : 'bg-yellow-300 text-black') : ''} cursor-pointer select-text flex items-start`}
+                  onClick={() =>
+                    setActiveVerse(activeVerse === v ? null : v)
+                  }
+                  className={`${
+                    highlight
+                      ? mode === 'dark' || mode === 'high-contrast'
+                        ? 'bg-yellow-300 text-black'
+                        : mode === 'sepia'
+                        ? 'bg-yellow-200 text-[#5F4B32]'
+                        : 'bg-yellow-300 text-black'
+                      : ''
+                  } cursor-pointer select-text flex items-start`}
                 >
                   <sup className="font-bold mr-2 flex-shrink-0">{v}</sup>
-                  {isSaved && (
-                    <span
-                      className={`mr-2 text-xs ${savedIndicatorColor} cursor-pointer`}
+
+                  {saved && (
+                    <InlineIcon
+                      title="Unsave verse"
+                      color={savedColor}
+                      icon="⭐"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleUnsave(v);
+                        unsaveVerse(book, Number(selectedChapter), Number(v));
                       }}
-                      title="Unsave verse"
-                    >
-                      ⭐
-                    </span>
+                    />
                   )}
-                  {isBookmarked && (
-                    <span
-                      className={`mr-2 text-xs ${bookmarkIndicatorColor} cursor-pointer`}
+
+                  {bookmarked && (
+                    <InlineIcon
+                      title="Remove bookmark"
+                      color={bookmarkColor}
+                      icon="🔖"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleBookmark(v);
                       }}
-                      title="Remove bookmark"
-                    >
-                      🔖
-                    </span>
+                    />
                   )}
-                  {hasNote && (
-                    <span
-                      className={`mr-2 text-xs ${noteIndicatorColor} cursor-pointer`}
+
+                  {noted && (
+                    <InlineIcon
+                      title="View/Edit note"
+                      color={noteColor}
+                      icon="📝"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setActiveVerse(v);
                         handleOpenNoteModal(v);
                       }}
-                      title="View/Edit note"
-                    >
-                      📝
-                    </span>
+                    />
                   )}
-                  {hasInsight && (
+
+                  {insight && (
                     <Link
-                      to={`/insights?tab=${hasInsight[0].tab}&id=${hasInsight[0].id}`}
-                      className={`mr-2 text-xs ${insightIndicatorColor} cursor-pointer`}
+                      to={`/insights?tab=${encodeURIComponent(
+                        insight.tab
+                      )}&id=${encodeURIComponent(insight.id)}`}
+                      className={`mr-2 text-xs ${insightColor} cursor-pointer`}
                       onClick={(e) => e.stopPropagation()}
-                      title={`Learn about ${hasInsight[0].title}`}
-                      aria-label={`Learn about ${hasInsight[0].title}`}
+                      title={`Learn about ${insight.title}`}
+                      aria-label={`Learn about ${insight.title}`}
                     >
                       📖
                     </Link>
                   )}
+
                   <span className="flex-grow">{chapterData[v]}</span>
                 </p>
+
+                {/* verse dropdown */}
                 {activeVerse === v && (
-                  <div className={`absolute left-0 z-10 mt-1 w-[80vw] md:w-64 rounded-md shadow-2xl ${dropdownClass}`}>
-                    <button
+                  <div
+                    className={`absolute left-0 z-10 mt-1 w-[80vw] md:w-64 rounded-md shadow-2xl ${dropdownClass}`}
+                  >
+                    <DropdownButton
+                      text="Save Verse"
                       onClick={() => handleSave(v)}
-                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                      aria-label="Save verse"
-                    >
-                      Save Verse
-                    </button>
-                    <button
+                      hoverClass={hoverClass}
+                    />
+                    <DropdownButton
+                      text="Share Verse"
                       onClick={() => handleShare(v)}
-                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                      aria-label="Share verse"
-                    >
-                      Share Verse
-                    </button>
-                    <button
-                      onClick={() => handleHighlight(v)}
-                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                      aria-label={isHighlighted ? 'Unhighlight verse' : 'Highlight verse'}
-                    >
-                      {isHighlighted ? 'Unhighlight Verse' : 'Highlight Verse'}
-                    </button>
-                    <button
+                      hoverClass={hoverClass}
+                    />
+                    <DropdownButton
+                      text={highlight ? 'Unhighlight Verse' : 'Highlight Verse'}
+                      onClick={() => {
+                        highlightVerse(
+                          book,
+                          Number(selectedChapter),
+                          Number(v)
+                        );
+                        setActiveVerse(null);
+                      }}
+                      hoverClass={hoverClass}
+                    />
+                    <DropdownButton
+                      text={bookmarked ? 'Remove Bookmark' : 'Add Bookmark'}
                       onClick={() => handleBookmark(v)}
-                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                      aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
-                    >
-                      {isBookmarked ? 'Remove Bookmark' : 'Add Bookmark'}
-                    </button>
-                    <button
+                      hoverClass={hoverClass}
+                    />
+                    <DropdownButton
+                      text={noted ? 'Edit/View Note' : 'Add Note'}
                       onClick={() => handleOpenNoteModal(v)}
-                      className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
-                      aria-label={hasNote ? 'Edit/View note' : 'Add note'}
-                    >
-                      {hasNote ? 'Edit/View Note' : 'Add Note'}
-                    </button>
+                      hoverClass={hoverClass}
+                    />
                   </div>
                 )}
               </div>
             );
           })}
         </div>
+      ) : (
+        <p className="text-center text-textGray">Loading chapter...</p>
       )}
-      {/* Note Modal */}
+
+      {/* note modal */}
       {isNoteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className={`w-4/5 max-w-md p-6 rounded-3xl shadow-2xl ${modeClass}`}>
-            <h2 className="text-xl font-bold mb-4 text-primaryBlue dark:text-white">
-              {editingNoteIndex !== null ? 'Edit Note' : 'Add Note'} for {book} {selectedChapter}:{activeVerse}
-            </h2>
-            <textarea
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              placeholder="Enter your note..."
-              className={`w-full p-2 border border-gray-300 rounded-lg ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
-              rows="4"
-              aria-label="Enter note for verse"
-            />
-            <div className="flex justify-between gap-2 mt-4">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setNoteText('');
-                    setEditingNoteIndex(null);
-                    setIsNoteModalOpen(false);
-                    setActiveVerse(null);
-                  }}
-                  className="py-2 px-4 rounded-full bg-gray-300 text-gray-800 hover:bg-gray-400"
-                  aria-label="Cancel note"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleAddNote(activeVerse)}
-                  className="py-2 px-4 rounded-full bg-primaryBlue text-white hover:bg-blue-700"
-                  aria-label="Save note"
-                >
-                  Save Note
-                </button>
-              </div>
-              {editingNoteIndex !== null && (
-                <button
-                  onClick={handleDeleteNote}
-                  className="py-2 px-4 rounded-full bg-red-500 text-white hover:bg-red-600"
-                  aria-label="Delete note"
-                >
-                  Delete
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        <NoteModal
+          modeClass={modeClass}
+          noteText={noteText}
+          setNoteText={setNoteText}
+          onClose={() => {
+            setNoteText('');
+            setEditingNoteIndex(null);
+            setIsNoteModalOpen(false);
+            setActiveVerse(null);
+          }}
+          onSave={() => handleAddNote(activeVerse)}
+          onDelete={
+            editingNoteIndex !== null ? handleDeleteNote : undefined
+          }
+          heading={`${editingNoteIndex !== null ? 'Edit' : 'Add'} Note for ${
+            book
+          } ${selectedChapter}:${activeVerse}`}
+        />
       )}
-      {/* Navigation */}
+
+      {/* chapter navigation */}
       <div className="mt-8 flex justify-between">
         {Number(selectedChapter) > 1 && (
           <Link
             to={`/bible/${book}/${Number(selectedChapter) - 1}`}
             className="text-primaryBlue dark:text-blue-300 hover:underline"
-            aria-label="Previous chapter"
           >
             Previous Chapter
           </Link>
         )}
+
         <Link
           to={`/bible/${book}`}
           className="text-primaryBlue dark:text-blue-300 hover:underline"
-          aria-label="Back to chapters"
         >
           Back to Chapters
         </Link>
-        {bookData && Number(selectedChapter) < Object.keys(bookData).length && (
-          <Link
-            to={`/bible/${book}/${Number(selectedChapter) + 1}`}
-            className="text-primaryBlue dark:text-blue-300 hover:underline"
-            aria-label="Next chapter"
-          >
-            Next Chapter
-          </Link>
-        )}
+
+        {bookData &&
+          Number(selectedChapter) < Object.keys(bookData).length && (
+            <Link
+              to={`/bible/${book}/${Number(selectedChapter) + 1}`}
+              className="text-primaryBlue dark:text-blue-300 hover:underline"
+            >
+              Next Chapter
+            </Link>
+          )}
       </div>
+
       <button
         onClick={() => markCompleted(book, Number(selectedChapter))}
         className="mt-4 bg-primaryGreen text-white py-2 px-4 rounded-full hover:bg-green-600"
-        aria-label="Mark chapter as completed"
       >
         Mark Complete
       </button>
@@ -599,4 +650,108 @@ const BibleReader = () => {
   );
 };
 
-export default BibleReader
+/* ---------------------- small sub-components ---------------------- */
+const Selector = ({
+  id,
+  label,
+  value,
+  onChange,
+  options,
+  disabled,
+  modeClass,
+}) => (
+  <div className="flex flex-col">
+    <label
+      htmlFor={id}
+      className="text-sm font-medium text-primaryBlue dark:text-white mb-1"
+    >
+      {label}
+    </label>
+    <select
+      id={id}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+      className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+    >
+      <option value="" disabled>
+        Select {label}
+      </option>
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.text}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
+const InlineIcon = ({ title, color, icon, onClick }) => (
+  <span
+    className={`mr-2 text-xs ${color} cursor-pointer`}
+    title={title}
+    onClick={onClick}
+  >
+    {icon}
+  </span>
+);
+
+const DropdownButton = ({ text, onClick, hoverClass }) => (
+  <button
+    className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
+    onClick={onClick}
+  >
+    {text}
+  </button>
+);
+
+const NoteModal = ({
+  modeClass,
+  noteText,
+  setNoteText,
+  onClose,
+  onSave,
+  onDelete,
+  heading,
+}) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className={`w-4/5 max-w-md p-6 rounded-3xl shadow-2xl ${modeClass}`}>
+      <h2 className="text-xl font-bold mb-4 text-primaryBlue dark:text-white">
+        {heading}
+      </h2>
+      <textarea
+        value={noteText}
+        onChange={(e) => setNoteText(e.target.value)}
+        placeholder="Enter your note..."
+        rows="4"
+        className={`w-full p-2 border border-gray-300 rounded-lg ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+      />
+      <div className="flex justify-between gap-2 mt-4">
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="py-2 px-4 rounded-full bg-gray-300 text-gray-800 hover:bg-gray-400"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onSave}
+            className="py-2 px-4 rounded-full bg-primaryBlue text-white hover:bg-blue-700"
+          >
+            Save Note
+          </button>
+        </div>
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            className="py-2 px-4 rounded-full bg-red-500 text-white hover:bg-red-600"
+          >
+            Delete
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+export default BibleReader;
