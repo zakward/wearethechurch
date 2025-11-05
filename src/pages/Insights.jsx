@@ -1,4 +1,3 @@
-
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
@@ -9,21 +8,22 @@ const Insights = () => {
   const { user } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
-
   const [activeTab, setActiveTab] = useState('lineages');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [openProphecies, setOpenProphecies] = useState({}); // Track which prophecies are open
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
     const id = params.get('id');
-
     if (tab && ['lineages', 'historicalEvents', 'parablesTeachings', 'prophecies'].includes(tab)) {
       setActiveTab(tab);
     }
     if (id) {
+      // If navigating to a specific prophecy, open it
+      setOpenProphecies(prev => ({ ...prev, [id]: true }));
       setTimeout(() => {
         const element = document.getElementById(id);
         if (element) {
@@ -39,7 +39,6 @@ const Insights = () => {
       setIsSearching(false);
       return;
     }
-
     setIsSearching(true);
     const query = searchQuery.toLowerCase();
     const results = [];
@@ -115,6 +114,13 @@ const Insights = () => {
     navigate(`/insights?tab=${item.category}&id=${item.id}`);
   };
 
+  const toggleProphecy = (id) => {
+    setOpenProphecies(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
   const linkForRef = (ref) => {
     // Robust-ish parser for "Book Chapter:Verse-Verse" or "Book Chapter"
     // Falls back to plain text if it can’t parse
@@ -127,6 +133,7 @@ const Insights = () => {
     const href = `/bible/${book}/${chapter}${verse ? `#verse-${verse}` : ''}`;
     return { href, label: cleanRef };
   };
+
 
   const renderSection = (sectionData, sectionTitle) => (
     <div>
@@ -180,211 +187,242 @@ const Insights = () => {
     return (
       <div>
         <h2 className="text-2xl font-bold mb-4 text-primaryBlue">Biblical Prophecies</h2>
-        <div className="space-y-6">
-          {prophecyData.map((p) => (
-            <div key={p.id} id={p.id} className="bg-white p-6 rounded-2xl shadow-xl border border-secondaryPurple">
-              {/* Title */}
-              <h3 className="text-xl font-bold text-funPink">{p.title}</h3>
+        <div className="space-y-4">
+          {prophecyData.map((p) => {
+            const isOpen = openProphecies[p.id] || false;
+            
+            return (
+              <div key={p.id} id={p.id} className="bg-white rounded-2xl shadow-xl border border-secondaryPurple overflow-hidden">
+                {/* Dropdown Header */}
+                <button
+                  onClick={() => toggleProphecy(p.id)}
+                  className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
+                  aria-expanded={isOpen}
+                  aria-label={`Toggle ${p.title}`}
+                >
+                  <div className="flex-1 text-left">
+                    <h3 className="text-xl font-bold text-funPink">{p.title}</h3>
+                    {p.summary && (
+                      <p className="text-textGray text-sm mt-1 line-clamp-2">{p.summary}</p>
+                    )}
+                  </div>
+                  <svg
+                    className={`w-6 h-6 text-primaryBlue transition-transform duration-300 flex-shrink-0 ml-4 ${
+                      isOpen ? 'transform rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
 
-              {/* Summary */}
-              {p.summary && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">Summary:</span> {p.summary}
-                </p>
-              )}
+                {/* Dropdown Content */}
+                {isOpen && (
+                  <div className="px-6 pb-6 border-t border-gray-200">
+                    {/* Summary (full version when open) */}
+                    {p.summary && (
+                      <p className="text-textGray mt-4">
+                        <span className="font-semibold">Summary:</span> {p.summary}
+                      </p>
+                    )}
 
-              {/* Core Metadata */}
-              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-                {p.book && (
-                  <p className="text-textGray">
-                    <span className="font-semibold">Book:</span> {p.book}{p.section ? ` — ${p.section}` : ''}
-                  </p>
-                )}
-                {p.status && (
-                  <p className="text-textGray">
-                    <span className="font-semibold">Status:</span> {p.status}
-                  </p>
-                )}
-                {p.speaker && (
-                  <p className="text-textGray">
-                    <span className="font-semibold">Speaker:</span> {p.speaker}
-                  </p>
-                )}
-                {p.audience && (
-                  <p className="text-textGray">
-                    <span className="font-semibold">Audience:</span> {p.audience}
-                  </p>
-                )}
-                {p.date_range && (
-                  <p className="text-textGray">
-                    <span className="font-semibold">Date:</span> {p.date_range}
-                  </p>
-                )}
-                {p.location && (
-                  <p className="text-textGray">
-                    <span className="font-semibold">Location:</span> {p.location}
-                  </p>
+                    {/* Core Metadata */}
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {p.book && (
+                        <p className="text-textGray">
+                          <span className="font-semibold">Book:</span> {p.book}{p.section ? ` — ${p.section}` : ''}
+                        </p>
+                      )}
+                      {p.status && (
+                        <p className="text-textGray">
+                          <span className="font-semibold">Status:</span> {p.status}
+                        </p>
+                      )}
+                      {p.speaker && (
+                        <p className="text-textGray">
+                          <span className="font-semibold">Speaker:</span> {p.speaker}
+                        </p>
+                      )}
+                      {p.audience && (
+                        <p className="text-textGray">
+                          <span className="font-semibold">Audience:</span> {p.audience}
+                        </p>
+                      )}
+                      {p.date_range && (
+                        <p className="text-textGray">
+                          <span className="font-semibold">Date:</span> {p.date_range}
+                        </p>
+                      )}
+                      {p.location && (
+                        <p className="text-textGray">
+                          <span className="font-semibold">Location:</span> {p.location}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Scripture Text References */}
+                    {p.text_refs && p.text_refs.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-textGray font-semibold">Scripture References:</p>
+                        <ul className="list-disc list-inside text-blue-500">
+                          {p.text_refs.map((ref, idx) => {
+                            const { href, label } = linkForRef(ref);
+                            return (
+                              <li key={idx}>
+                                {href ? (
+                                  <Link to={href} className="hover:underline" aria-label={`Read ${label}`}>
+                                    {label}
+                                  </Link>
+                                ) : (
+                                  <span>{label}</span>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* What/Why */}
+                    {p.what && (
+                      <p className="text-textGray mt-4">
+                        <span className="font-semibold">What:</span> {p.what}
+                      </p>
+                    )}
+                    {p.why && (
+                      <p className="text-textGray mt-2">
+                        <span className="font-semibold">Why:</span> {p.why}
+                      </p>
+                    )}
+
+                    {/* Historical Context */}
+                    {p.historical_context && (
+                      <p className="text-textGray mt-4">
+                        <span className="font-semibold">Historical Context:</span> {p.historical_context}
+                      </p>
+                    )}
+
+                    {/* Significance */}
+                    {p.significance && (
+                      <p className="text-textGray mt-2">
+                        <span className="font-semibold">Significance:</span> {p.significance}
+                      </p>
+                    )}
+
+                    {/* Contemporary Belief */}
+                    {p.contemporary_belief && (
+                      <p className="text-textGray mt-2">
+                        <span className="font-semibold">What People Believed:</span> {p.contemporary_belief}
+                      </p>
+                    )}
+
+                    {/* Transmission */}
+                    {p.transmission && (
+                      <p className="text-textGray mt-2">
+                        <span className="font-semibold">Transmission:</span> {p.transmission}
+                      </p>
+                    )}
+
+                    {/* Analogy */}
+                    {p.analogy && (
+                      <p className="text-textGray mt-4 italic">
+                        <span className="font-semibold not-italic">Analogy:</span> {p.analogy}
+                      </p>
+                    )}
+
+                    {/* Fulfillment Analysis */}
+                    {p.fulfillment_analysis && (
+                      <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <p className="font-semibold text-gray-800 mb-2">Fulfillment Analysis:</p>
+                        <p className="text-textGray">{p.fulfillment_analysis}</p>
+                      </div>
+                    )}
+
+                    {/* Fulfillment Details */}
+                    {Array.isArray(p.fulfillment_details) && p.fulfillment_details.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-textGray font-semibold">Detailed Fulfillments:</p>
+                        <ul className="list-disc list-inside text-textGray ml-4 space-y-1">
+                          {p.fulfillment_details.map((detail, idx) => (
+                            <li key={idx}>{detail}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Fulfillment References */}
+                    {Array.isArray(p.fulfillment_refs) && p.fulfillment_refs.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-textGray font-semibold">Fulfillment References:</p>
+                        <ul className="list-disc list-inside text-blue-500">
+                          {p.fulfillment_refs.map((ref, idx) => {
+                            const { href, label } = linkForRef(ref);
+                            return (
+                              <li key={idx}>
+                                {href ? (
+                                  <Link to={href} className="hover:underline" aria-label={`Read ${label}`}>
+                                    {label}
+                                  </Link>
+                                ) : (
+                                  <span>{label}</span>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Cross References */}
+                    {Array.isArray(p.cross_refs) && p.cross_refs.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-textGray font-semibold">Cross References:</p>
+                        <ul className="list-disc list-inside text-blue-500">
+                          {p.cross_refs.map((ref, idx) => {
+                            const { href, label } = linkForRef(ref);
+                            return (
+                              <li key={idx}>
+                                {href ? (
+                                  <Link to={href} className="hover:underline" aria-label={`Read ${label}`}>
+                                    {label}
+                                  </Link>
+                                ) : (
+                                  <span>{label}</span>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Theological Notes */}
+                    {Array.isArray(p.theological_notes) && p.theological_notes.length > 0 && (
+                      <p className="text-textGray mt-4">
+                        <span className="font-semibold">Theological Notes:</span> {p.theological_notes.join(', ')}
+                      </p>
+                    )}
+
+                    {/* Interpretive Views */}
+                    {Array.isArray(p.interpretive_views) && p.interpretive_views.length > 0 && (
+                      <p className="text-textGray mt-2">
+                        <span className="font-semibold">Interpretive Views:</span> {p.interpretive_views.join(', ')}
+                      </p>
+                    )}
+
+                    {/* Keywords */}
+                    {Array.isArray(p.keywords) && p.keywords.length > 0 && (
+                      <p className="text-textGray mt-2">
+                        <span className="font-semibold">Keywords:</span> {p.keywords.join(', ')}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
-
-              {/* Scripture Text References */}
-              {p.text_refs && p.text_refs.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-textGray font-semibold">Scripture References:</p>
-                  <ul className="list-disc list-inside text-blue-500">
-                    {p.text_refs.map((ref, idx) => {
-                      const { href, label } = linkForRef(ref);
-                      return (
-                        <li key={idx}>
-                          {href ? (
-                            <Link to={href} className="hover:underline" aria-label={`Read ${label}`}>
-                              {label}
-                            </Link>
-                          ) : (
-                            <span>{label}</span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-
-              {/* What/Why */}
-              {p.what && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">What:</span> {p.what}
-                </p>
-              )}
-              {p.why && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">Why:</span> {p.why}
-                </p>
-              )}
-
-              {/* Historical Context */}
-              {p.historical_context && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">Historical Context:</span> {p.historical_context}
-                </p>
-              )}
-
-              {/* Significance */}
-              {p.significance && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">Significance:</span> {p.significance}
-                </p>
-              )}
-
-              {/* Contemporary Belief */}
-              {p.contemporary_belief && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">What People Believed:</span> {p.contemporary_belief}
-                </p>
-              )}
-
-              {/* Transmission */}
-              {p.transmission && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">Transmission:</span> {p.transmission}
-                </p>
-              )}
-
-              {/* Analogy */}
-              {p.analogy && (
-                <p className="text-textGray mt-2 italic">
-                  <span className="font-semibold not-italic">Analogy:</span> {p.analogy}
-                </p>
-              )}
-
-              {/* Fulfillment Analysis */}
-              {p.fulfillment_analysis && (
-                <div className="mt-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <p className="font-semibold text-gray-800 mb-2">Fulfillment Analysis:</p>
-                  <p className="text-textGray">{p.fulfillment_analysis}</p>
-                </div>
-              )}
-
-              {/* Fulfillment Details */}
-              {Array.isArray(p.fulfillment_details) && p.fulfillment_details.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-textGray font-semibold">Detailed Fulfillments:</p>
-                  <ul className="list-disc list-inside text-textGray ml-4 space-y-1">
-                    {p.fulfillment_details.map((detail, idx) => (
-                      <li key={idx}>{detail}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Fulfillment References */}
-              {Array.isArray(p.fulfillment_refs) && p.fulfillment_refs.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-textGray font-semibold">Fulfillment References:</p>
-                  <ul className="list-disc list-inside text-blue-500">
-                    {p.fulfillment_refs.map((ref, idx) => {
-                      const { href, label } = linkForRef(ref);
-                      return (
-                        <li key={idx}>
-                          {href ? (
-                            <Link to={href} className="hover:underline" aria-label={`Read ${label}`}>
-                              {label}
-                            </Link>
-                          ) : (
-                            <span>{label}</span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-
-              {/* Cross References */}
-              {Array.isArray(p.cross_refs) && p.cross_refs.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-textGray font-semibold">Cross References:</p>
-                  <ul className="list-disc list-inside text-blue-500">
-                    {p.cross_refs.map((ref, idx) => {
-                      const { href, label } = linkForRef(ref);
-                      return (
-                        <li key={idx}>
-                          {href ? (
-                            <Link to={href} className="hover:underline" aria-label={`Read ${label}`}>
-                              {label}
-                            </Link>
-                          ) : (
-                            <span>{label}</span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-
-              {/* Theological Notes */}
-              {Array.isArray(p.theological_notes) && p.theological_notes.length > 0 && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">Theological Notes:</span> {p.theological_notes.join(', ')}
-                </p>
-              )}
-
-              {/* Interpretive Views */}
-              {Array.isArray(p.interpretive_views) && p.interpretive_views.length > 0 && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">Interpretive Views:</span> {p.interpretive_views.join(', ')}
-                </p>
-              )}
-
-              {/* Keywords */}
-              {Array.isArray(p.keywords) && p.keywords.length > 0 && (
-                <p className="text-textGray mt-2">
-                  <span className="font-semibold">Keywords:</span> {p.keywords.join(', ')}
-                </p>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );

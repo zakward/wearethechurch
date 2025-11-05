@@ -1,20 +1,18 @@
-// ===== FRONTEND: BibleReader.jsx (FIXED VERSION) =====
 import React, { useContext, useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { BibleContext } from '../BibleContext.jsx';
 import { AuthContext } from '../AuthContext.jsx';
 import { insightsData } from '../data/InsightsData.js';
 
 const BibleReader = () => {
-  const params = useParams();
-  const book = params.book;
-  const chapterParam = params.chapter;
-
+  const { book, chapter: chapterParam } = useParams();
   const {
     currentBibleData,
     markCompleted,
     currentTranslation,
     setCurrentTranslation,
+    readerSettings,
+    updateReaderSettings,
   } = useContext(BibleContext);
 
   const {
@@ -26,109 +24,118 @@ const BibleReader = () => {
     unbookmark,
     addNote,
     deleteNote,
-    readerSettings,
-    updateReaderSettings,
-    loading, // Add this to check if settings are loaded
   } = useContext(AuthContext);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
-  /* -------------------- local UI state -------------------- */
+  const [mode, setMode] = useState(readerSettings?.mode || 'light');
   const [activeVerse, setActiveVerse] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [editingNoteIndex, setEditingNoteIndex] = useState(null);
   const [selectedBook, setSelectedBook] = useState(book || '');
   const [selectedChapter, setSelectedChapter] = useState('');
-  const [selectedVerse, setSelectedVerse] = useState('');
   const [error, setError] = useState(null);
-  const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
-  const [isSpeaking, setIsSpeaking] = useState(false);
 
-  const speechSupported =
-    typeof window !== 'undefined' && 'speechSynthesis' in window;
+  // Data helpers (bookData, chapterData, verses)
+  const bookData = currentBibleData && selectedBook in currentBibleData
+    ? currentBibleData[selectedBook]
+    : null;
 
-  /* ---------- FIXED: Sync translation only once on mount ---------- */
+  const chapterData = bookData && selectedChapter in bookData ? bookData[selectedChapter] : null;
+  const verses = chapterData ? Object.keys(chapterData).sort((a, b) => Number(a) - Number(b)) : [];
+
+  // Sync translation only once on mount
   useEffect(() => {
-    if (readerSettings?.version && !loading) {
+    if (readerSettings?.version) {
       setCurrentTranslation(readerSettings.version);
     }
-  }, []); // Empty deps - only run once on mount
+    // eslint-disable-next-line
+  }, []); // Only on mount
 
-  /* ---------- Listen for settings changes after mount ---------- */
+  // Listen for settings changes after mount
   useEffect(() => {
-    if (readerSettings?.version && currentTranslation !== readerSettings.version) {
+    if (
+      readerSettings?.version &&
+      currentTranslation !== readerSettings.version
+    ) {
       setCurrentTranslation(readerSettings.version);
     }
+    // eslint-disable-next-line
   }, [readerSettings?.version]);
 
-  /* ------------- sync URL → component state on load ------------- */
+  // Sync URL → component state on load
   useEffect(() => {
     if (book && currentBibleData && currentBibleData[book]) {
       setSelectedBook(book);
       const chap = chapterParam || '1';
       setSelectedChapter(chap);
-      setSelectedVerse('');
       setError(null);
       if (!chapterParam) {
         navigate(`/bible/${book}/1`, { replace: true });
       }
-    } else {
+    } else if (currentBibleData) {
       setError('Invalid book or chapter selected.');
     }
+    // eslint-disable-next-line
   }, [book, chapterParam, currentBibleData, navigate]);
 
-  /* ----------------------- data helpers ----------------------- */
-  const bookData =
-    currentBibleData && selectedBook in currentBibleData
-      ? currentBibleData[selectedBook]
-      : null;
-  const chapterData =
-    bookData && selectedChapter in bookData ? bookData[selectedChapter] : null;
+  // Parse hash for verse focus, after verses available
+  useEffect(() => {
+    if (location.hash && verses && verses.length) {
+      const hashVerse = location.hash.replace('#verse-', '');
+      if (hashVerse && verses.includes(hashVerse)) {
+        const element = document.getElementById(`verse-${hashVerse}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('bg-blue-200');
+          setTimeout(() => element.classList.remove('bg-blue-200'), 3000);
+        }
+      }
+    }
+  }, [location.hash, verses]);
 
-  const verses = chapterData
-    ? Object.keys(chapterData).sort((a, b) => Number(a) - Number(b))
-    : [];
-
-  /* -------------------- insight mapping -------------------- */
+  // Insight mapping
   const verseInsights = {};
   const addInsights = (section, tab) => {
     section.forEach((item) => {
       item.verseReferences.forEach((ref) => {
         const [refBook, chapVerse] = ref.split(' ');
-        const [refChap, refVerse] = chapVerse.includes(':')
-          ? chapVerse.split(':')
-          : [chapVerse, null];
+        if (!chapVerse) return;
+        const [refChap, refVerse] = chapVerse.includes(':') ? chapVerse.split(':') : [chapVerse, null];
         if (refBook === book && refChap === selectedChapter) {
-          const range = refVerse ? refVerse.split('-').map(Number) : [];
-          (range.length ? range : [Number(refVerse)]).forEach((v) => {
-            if (!verseInsights[v]) verseInsights[v] = [];
-            verseInsights[v].push({ id: item.id, title: item.title, tab });
-          });
+          if (refVerse) {
+            let rangeArr = refVerse.includes('-')
+              ? (() => {
+                  const [start, end] = refVerse.split('-').map(Number);
+                  return Array.from({ length: end - start + 1 }, (_, i) => (start + i).toString());
+                })()
+              : [refVerse];
+            rangeArr.forEach((v) => {
+              if (!verseInsights[v]) verseInsights[v] = [];
+              verseInsights[v].push({ id: item.id, title: item.title, tab });
+            });
+          }
         }
       });
     });
   };
-  addInsights(insightsData.parablesTeachings, 'parablesTeachings');
-  addInsights(insightsData.historicalEvents, 'historicalEvents');
-  addInsights(insightsData.lineages, 'lineages');
 
-  /* ---------------------- theme classes ---------------------- */
-  // FIXED: Provide default values directly if readerSettings is undefined
-  const mode = readerSettings?.mode || 'light';
+  if (insightsData) {
+    addInsights(insightsData.parablesTeachings || [], 'parablesTeachings');
+    addInsights(insightsData.historicalEvents || [], 'historicalEvents');
+    addInsights(insightsData.lineages || [], 'lineages');
+  }
+
+  // Theme classes
   const fontSize = readerSettings?.fontSize || 'base';
   const fontFamily = readerSettings?.fontFamily || 'friendly';
-
-  const sizeClass =
-    fontSize === 'base' ? 'text-base' : fontSize === 'lg' ? 'text-lg' : 'text-xl';
+  const sizeClass = fontSize === 'base' ? 'text-base' : fontSize === 'lg' ? 'text-lg' : 'text-xl';
   const familyClass =
-    fontFamily === 'friendly'
-      ? 'font-friendly'
-      : fontFamily === 'serif'
-      ? 'font-serif'
-      : 'font-sans';
+    fontFamily === 'friendly' ? 'font-friendly' : fontFamily === 'serif' ? 'font-serif' : 'font-sans';
 
-  /* dynamic palette */
+  // Dynamic palette
   let modeClass = 'bg-white text-textGray';
   let dropdownClass = 'bg-white text-gray-800 shadow-md';
   let hoverClass = 'hover:bg-gray-100';
@@ -167,13 +174,10 @@ const BibleReader = () => {
     keyText = 'text-yellow-300';
   }
 
-  /* ------------------ note handlers ------------------ */
+  // Note handlers
   const handleOpenNoteModal = (v) => {
     const existingNote = user?.notes?.find(
-      (n) =>
-        n.book === book &&
-        n.chapter === Number(selectedChapter) &&
-        n.verse === Number(v)
+      (n) => n.book === book && n.chapter === Number(selectedChapter) && n.verse === Number(v)
     );
     if (existingNote) {
       setNoteText(existingNote.text);
@@ -192,7 +196,6 @@ const BibleReader = () => {
       return;
     }
     if (editingNoteIndex !== null) {
-      // Edit existing note
       await deleteNote(editingNoteIndex);
     }
     await addNote({
@@ -218,7 +221,7 @@ const BibleReader = () => {
     }
   };
 
-  /* ------------------ handlers (save/etc.) ------------------ */
+  // Handlers (save/etc.)
   const handleSave = (v) => {
     const text = chapterData[v];
     saveVerse({
@@ -235,7 +238,11 @@ const BibleReader = () => {
 
   const handleShare = (v) => {
     const share = `${book} ${selectedChapter}:${v} "${chapterData[v]}" (${currentTranslation})`;
-    navigator.clipboard.writeText(share).then(() => alert('Verse copied!'));
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(share)
+        .then(() => alert('Verse copied!'))
+        .catch(() => alert('Could not copy verse.'));
+    }
     setActiveVerse(null);
   };
 
@@ -264,43 +271,28 @@ const BibleReader = () => {
     setActiveVerse(null);
   };
 
-  /* -------------------- UI rendering -------------------- */
+  // UI rendering
   if (!currentBibleData)
     return <div className="text-center p-8">Loading Bible data...</div>;
 
   return (
-    <div
-      className={`relative p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-white ${modeClass} ${sizeClass} ${familyClass}`}
-    >
-      {/* back arrow */}
+    <div className={`relative p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-white ${modeClass} ${sizeClass} ${familyClass}`}>
+      {/* Back arrow */}
       <button
         onClick={() => navigate('/bible')}
         className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
         aria-label="Back to Bible Books"
       >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </button>
-
-      {/* icon key */}
-      <div
-        className={`mb-6 mt-[40px] p-4 rounded-2xl shadow-xl border border-secondaryPurple ${modeClass}`}
-      >
+      {/* Icon key */}
+      <div className={`mb-6 mt-[40px] p-4 rounded-2xl shadow-xl border border-secondaryPurple ${modeClass}`}>
         <h2 className={`text-lg font-bold mb-3 ${keyText}`}>Icon Key</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { icon: '⭐', label: 'Saved', color: savedColor },
+            { icon: '⭐', label: 'Saved Verse', color: savedColor },
             { icon: '📝', label: 'Note', color: noteColor },
             { icon: '🔖', label: 'Bookmark', color: bookmarkColor },
             { icon: '📖', label: 'Insight', color: insightColor },
@@ -312,10 +304,9 @@ const BibleReader = () => {
           ))}
         </div>
       </div>
-
-      {/* controls */}
+      {/* Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-        {/* selectors */}
+        {/* Selectors */}
         <div className="flex flex-wrap gap-4">
           {/* Book */}
           <Selector
@@ -361,7 +352,11 @@ const BibleReader = () => {
             id="mode"
             label="Mode"
             value={mode}
-            onChange={(e) => updateReaderSettings({ mode: e.target.value })}
+            onChange={(e) => {
+              const newMode = e.target.value;
+              setMode(newMode);
+              updateReaderSettings({ mode: newMode });
+            }}
             options={[
               { value: 'light', text: 'Light' },
               { value: 'dark', text: 'Dark' },
@@ -370,7 +365,7 @@ const BibleReader = () => {
             ]}
             modeClass={modeClass}
           />
-          {/* Font size */}
+          {/* Font Size */}
           <Selector
             id="fontSize"
             label="Font Size"
@@ -383,14 +378,12 @@ const BibleReader = () => {
             ]}
             modeClass={modeClass}
           />
-          {/* Font family */}
+          {/* Font Family */}
           <Selector
             id="fontFamily"
             label="Font Style"
             value={fontFamily}
-            onChange={(e) =>
-              updateReaderSettings({ fontFamily: e.target.value })
-            }
+            onChange={(e) => updateReaderSettings({ fontFamily: e.target.value })}
             options={[
               { value: 'friendly', text: 'Friendly (Fredoka)' },
               { value: 'serif', text: 'Serif (Times)' },
@@ -415,24 +408,17 @@ const BibleReader = () => {
             modeClass={modeClass}
           />
         </div>
-
         <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">
           {book} {selectedChapter}
         </h1>
       </div>
-
-      {/* error */}
+      {/* Error */}
       {error && (
-        <p className="text-center text-red-500 dark:text-red-300 mb-4">
-          {error}
-        </p>
+        <p className="text-center text-red-500 dark:text-red-300 mb-4">{error}</p>
       )}
-
-      {/* verses */}
+      {/* Verses */}
       {chapterData ? (
-        <div
-          className={`space-y-2 sm:space-y-4 p-2 sm:p-4 rounded-md ${modeClass}`}
-        >
+        <div className={`space-y-2 sm:space-y-4 p-2 sm:p-4 rounded-md ${modeClass}`}>
           {verses.map((v) => {
             const highlight =
               user?.highlightedVerses?.some(
@@ -462,20 +448,16 @@ const BibleReader = () => {
                   n.chapter === Number(selectedChapter) &&
                   n.verse === Number(v)
               ) || false;
-
             const insight =
               Array.isArray(verseInsights[v]) && verseInsights[v].length
                 ? verseInsights[v][0]
                 : null;
-
             return (
               <div key={v} className="relative">
-                {/* verse line */}
+                {/* Verse line */}
                 <p
                   id={`verse-${v}`}
-                  onClick={() =>
-                    setActiveVerse(activeVerse === v ? null : v)
-                  }
+                  onClick={() => setActiveVerse(activeVerse === v ? null : v)}
                   className={`${
                     highlight
                       ? mode === 'dark' || mode === 'high-contrast'
@@ -487,7 +469,6 @@ const BibleReader = () => {
                   } cursor-pointer select-text flex items-start`}
                 >
                   <sup className="font-bold mr-2 flex-shrink-0">{v}</sup>
-
                   {saved && (
                     <InlineIcon
                       title="Unsave verse"
@@ -499,7 +480,6 @@ const BibleReader = () => {
                       }}
                     />
                   )}
-
                   {bookmarked && (
                     <InlineIcon
                       title="Remove bookmark"
@@ -511,7 +491,6 @@ const BibleReader = () => {
                       }}
                     />
                   )}
-
                   {noted && (
                     <InlineIcon
                       title="View/Edit note"
@@ -524,7 +503,6 @@ const BibleReader = () => {
                       }}
                     />
                   )}
-
                   {insight && (
                     <Link
                       to={`/insights?tab=${encodeURIComponent(
@@ -538,15 +516,11 @@ const BibleReader = () => {
                       📖
                     </Link>
                   )}
-
                   <span className="flex-grow">{chapterData[v]}</span>
                 </p>
-
-                {/* verse dropdown */}
+                {/* Verse dropdown */}
                 {activeVerse === v && (
-                  <div
-                    className={`absolute left-0 z-10 mt-1 w-[80vw] md:w-64 rounded-md shadow-2xl ${dropdownClass}`}
-                  >
+                  <div className={`absolute left-0 z-10 mt-1 w-[80vw] md:w-64 rounded-md shadow-2xl ${dropdownClass}`}>
                     <DropdownButton
                       text="Save Verse"
                       onClick={() => handleSave(v)}
@@ -560,11 +534,7 @@ const BibleReader = () => {
                     <DropdownButton
                       text={highlight ? 'Unhighlight Verse' : 'Highlight Verse'}
                       onClick={() => {
-                        highlightVerse(
-                          book,
-                          Number(selectedChapter),
-                          Number(v)
-                        );
+                        highlightVerse(book, Number(selectedChapter), Number(v));
                         setActiveVerse(null);
                       }}
                       hoverClass={hoverClass}
@@ -588,8 +558,7 @@ const BibleReader = () => {
       ) : (
         <p className="text-center text-textGray">Loading chapter...</p>
       )}
-
-      {/* note modal */}
+      {/* Note modal */}
       {isNoteModalOpen && (
         <NoteModal
           modeClass={modeClass}
@@ -602,16 +571,13 @@ const BibleReader = () => {
             setActiveVerse(null);
           }}
           onSave={() => handleAddNote(activeVerse)}
-          onDelete={
-            editingNoteIndex !== null ? handleDeleteNote : undefined
-          }
-          heading={`${editingNoteIndex !== null ? 'Edit' : 'Add'} Note for ${
-            book
-          } ${selectedChapter}:${activeVerse}`}
+          onDelete={editingNoteIndex !== null ? handleDeleteNote : undefined}
+          heading={`${
+            editingNoteIndex !== null ? 'Edit' : 'Add'
+          } Note for ${book} ${selectedChapter}:${activeVerse}`}
         />
       )}
-
-      {/* chapter navigation */}
+      {/* Chapter navigation */}
       <div className="mt-8 flex justify-between">
         {Number(selectedChapter) > 1 && (
           <Link
@@ -621,14 +587,12 @@ const BibleReader = () => {
             Previous Chapter
           </Link>
         )}
-
         <Link
           to={`/bible/${book}`}
           className="text-primaryBlue dark:text-blue-300 hover:underline"
         >
           Back to Chapters
         </Link>
-
         {bookData &&
           Number(selectedChapter) < Object.keys(bookData).length && (
             <Link
@@ -639,7 +603,6 @@ const BibleReader = () => {
             </Link>
           )}
       </div>
-
       <button
         onClick={() => markCompleted(book, Number(selectedChapter))}
         className="mt-4 bg-primaryGreen text-white py-2 px-4 rounded-full hover:bg-green-600"
@@ -650,21 +613,9 @@ const BibleReader = () => {
   );
 };
 
-/* ---------------------- small sub-components ---------------------- */
-const Selector = ({
-  id,
-  label,
-  value,
-  onChange,
-  options,
-  disabled,
-  modeClass,
-}) => (
+const Selector = ({ id, label, value, onChange, options, disabled, modeClass }) => (
   <div className="flex flex-col">
-    <label
-      htmlFor={id}
-      className="text-sm font-medium text-primaryBlue dark:text-white mb-1"
-    >
+    <label htmlFor={id} className="text-sm font-medium text-primaryBlue dark:text-white mb-1">
       {label}
     </label>
     <select
@@ -691,6 +642,9 @@ const InlineIcon = ({ title, color, icon, onClick }) => (
     className={`mr-2 text-xs ${color} cursor-pointer`}
     title={title}
     onClick={onClick}
+    role="button"
+    tabIndex={0}
+    onKeyPress={onClick}
   >
     {icon}
   </span>
@@ -700,6 +654,7 @@ const DropdownButton = ({ text, onClick, hoverClass }) => (
   <button
     className={`block w-full text-left px-4 py-2 md:py-3 text-sm md:text-base ${hoverClass}`}
     onClick={onClick}
+    type="button"
   >
     {text}
   </button>
@@ -731,12 +686,14 @@ const NoteModal = ({
           <button
             onClick={onClose}
             className="py-2 px-4 rounded-full bg-gray-300 text-gray-800 hover:bg-gray-400"
+            type="button"
           >
             Cancel
           </button>
           <button
             onClick={onSave}
             className="py-2 px-4 rounded-full bg-primaryBlue text-white hover:bg-blue-700"
+            type="button"
           >
             Save Note
           </button>
@@ -745,6 +702,7 @@ const NoteModal = ({
           <button
             onClick={onDelete}
             className="py-2 px-4 rounded-full bg-red-500 text-white hover:bg-red-600"
+            type="button"
           >
             Delete
           </button>
