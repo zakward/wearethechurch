@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
 import { insightsData } from '../data/InsightsData.js';
 import { prophecyData } from '../data/prophecyData.jsx';
+import { bibleBooksData, nonCanonicalBooksData } from '../data/BibleBooksAuthorData.js';
 
 const Insights = () => {
   const { user } = useContext(AuthContext);
@@ -12,18 +13,22 @@ const Insights = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [openProphecies, setOpenProphecies] = useState({}); // Track which prophecies are open
+  const [openProphecies, setOpenProphecies] = useState({});
+  const [openBooks, setOpenBooks] = useState({});
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
     const id = params.get('id');
-    if (tab && ['lineages', 'historicalEvents', 'parablesTeachings', 'prophecies'].includes(tab)) {
+    if (tab && ['lineages', 'historicalEvents', 'parablesTeachings', 'prophecies', 'bibleBooks'].includes(tab)) {
       setActiveTab(tab);
     }
     if (id) {
-      // If navigating to a specific prophecy, open it
-      setOpenProphecies(prev => ({ ...prev, [id]: true }));
+      if (tab === 'prophecies') {
+        setOpenProphecies(prev => ({ ...prev, [id]: true }));
+      } else if (tab === 'bibleBooks') {
+        setOpenBooks(prev => ({ ...prev, [id]: true }));
+      }
       setTimeout(() => {
         const element = document.getElementById(id);
         if (element) {
@@ -95,6 +100,27 @@ const Insights = () => {
       });
     }
 
+    // Search in bible books
+    [...bibleBooksData.oldTestament, ...bibleBooksData.newTestament, ...nonCanonicalBooksData].forEach((item) => {
+      const titleMatch = item.title?.toLowerCase().includes(query);
+      const authorMatch = item.author?.toLowerCase().includes(query);
+      const summaryMatch = item.summary?.toLowerCase().includes(query);
+      const contextMatch = item.geographical_location?.toLowerCase().includes(query);
+      const significanceMatch = item.significance?.toLowerCase().includes(query);
+      const whyIncludedMatch = item.why_included ? item.why_included.toLowerCase().includes(query) : false;
+      const reasonsNotIncludedMatch = item.reasons_not_included ? item.reasons_not_included.toLowerCase().includes(query) : false;
+      const versesMatch = item.significant_verses ? item.significant_verses.some(v => v.toLowerCase().includes(query)) : false;
+      const analogyMatch = item.analogy ? item.analogy.toLowerCase().includes(query) : false;
+
+      if (titleMatch || authorMatch || summaryMatch || contextMatch || significanceMatch || whyIncludedMatch || reasonsNotIncludedMatch || versesMatch || analogyMatch) {
+        results.push({
+          ...item,
+          category: 'bibleBooks',
+          categoryName: 'Bible Books'
+        });
+      }
+    });
+
     setSearchResults(results);
   }, [searchQuery]);
 
@@ -121,9 +147,14 @@ const Insights = () => {
     }));
   };
 
+  const toggleBook = (id) => {
+    setOpenBooks(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
   const linkForRef = (ref) => {
-    // Robust-ish parser for "Book Chapter:Verse-Verse" or "Book Chapter"
-    // Falls back to plain text if it can’t parse
     const cleanRef = ref.replace(' (NIV)', '').trim();
     const match = cleanRef.match(/^(\d?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)(?::(\d+))?/);
     if (!match) return { href: null, label: cleanRef };
@@ -133,7 +164,6 @@ const Insights = () => {
     const href = `/bible/${book}/${chapter}${verse ? `#verse-${verse}` : ''}`;
     return { href, label: cleanRef };
   };
-
 
   const renderSection = (sectionData, sectionTitle) => (
     <div>
@@ -193,7 +223,6 @@ const Insights = () => {
             
             return (
               <div key={p.id} id={p.id} className="bg-white rounded-2xl shadow-xl border border-secondaryPurple overflow-hidden">
-                {/* Dropdown Header */}
                 <button
                   onClick={() => toggleProphecy(p.id)}
                   className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
@@ -218,17 +247,14 @@ const Insights = () => {
                   </svg>
                 </button>
 
-                {/* Dropdown Content */}
                 {isOpen && (
                   <div className="px-6 pb-6 border-t border-gray-200">
-                    {/* Summary (full version when open) */}
                     {p.summary && (
                       <p className="text-textGray mt-4">
                         <span className="font-semibold">Summary:</span> {p.summary}
                       </p>
                     )}
 
-                    {/* Core Metadata */}
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
                       {p.book && (
                         <p className="text-textGray">
@@ -262,7 +288,6 @@ const Insights = () => {
                       )}
                     </div>
 
-                    {/* Scripture Text References */}
                     {p.text_refs && p.text_refs.length > 0 && (
                       <div className="mt-4">
                         <p className="text-textGray font-semibold">Scripture References:</p>
@@ -285,7 +310,6 @@ const Insights = () => {
                       </div>
                     )}
 
-                    {/* What/Why */}
                     {p.what && (
                       <p className="text-textGray mt-4">
                         <span className="font-semibold">What:</span> {p.what}
@@ -297,42 +321,36 @@ const Insights = () => {
                       </p>
                     )}
 
-                    {/* Historical Context */}
                     {p.historical_context && (
                       <p className="text-textGray mt-4">
                         <span className="font-semibold">Historical Context:</span> {p.historical_context}
                       </p>
                     )}
 
-                    {/* Significance */}
                     {p.significance && (
                       <p className="text-textGray mt-2">
                         <span className="font-semibold">Significance:</span> {p.significance}
                       </p>
                     )}
 
-                    {/* Contemporary Belief */}
                     {p.contemporary_belief && (
                       <p className="text-textGray mt-2">
                         <span className="font-semibold">What People Believed:</span> {p.contemporary_belief}
                       </p>
                     )}
 
-                    {/* Transmission */}
                     {p.transmission && (
                       <p className="text-textGray mt-2">
                         <span className="font-semibold">Transmission:</span> {p.transmission}
                       </p>
                     )}
 
-                    {/* Analogy */}
                     {p.analogy && (
                       <p className="text-textGray mt-4 italic">
                         <span className="font-semibold not-italic">Analogy:</span> {p.analogy}
                       </p>
                     )}
 
-                    {/* Fulfillment Analysis */}
                     {p.fulfillment_analysis && (
                       <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
                         <p className="font-semibold text-gray-800 mb-2">Fulfillment Analysis:</p>
@@ -340,7 +358,6 @@ const Insights = () => {
                       </div>
                     )}
 
-                    {/* Fulfillment Details */}
                     {Array.isArray(p.fulfillment_details) && p.fulfillment_details.length > 0 && (
                       <div className="mt-4">
                         <p className="text-textGray font-semibold">Detailed Fulfillments:</p>
@@ -352,7 +369,6 @@ const Insights = () => {
                       </div>
                     )}
 
-                    {/* Fulfillment References */}
                     {Array.isArray(p.fulfillment_refs) && p.fulfillment_refs.length > 0 && (
                       <div className="mt-4">
                         <p className="text-textGray font-semibold">Fulfillment References:</p>
@@ -375,7 +391,6 @@ const Insights = () => {
                       </div>
                     )}
 
-                    {/* Cross References */}
                     {Array.isArray(p.cross_refs) && p.cross_refs.length > 0 && (
                       <div className="mt-4">
                         <p className="text-textGray font-semibold">Cross References:</p>
@@ -398,21 +413,18 @@ const Insights = () => {
                       </div>
                     )}
 
-                    {/* Theological Notes */}
                     {Array.isArray(p.theological_notes) && p.theological_notes.length > 0 && (
                       <p className="text-textGray mt-4">
                         <span className="font-semibold">Theological Notes:</span> {p.theological_notes.join(', ')}
                       </p>
                     )}
 
-                    {/* Interpretive Views */}
                     {Array.isArray(p.interpretive_views) && p.interpretive_views.length > 0 && (
                       <p className="text-textGray mt-2">
                         <span className="font-semibold">Interpretive Views:</span> {p.interpretive_views.join(', ')}
                       </p>
                     )}
 
-                    {/* Keywords */}
                     {Array.isArray(p.keywords) && p.keywords.length > 0 && (
                       <p className="text-textGray mt-2">
                         <span className="font-semibold">Keywords:</span> {p.keywords.join(', ')}
@@ -424,6 +436,136 @@ const Insights = () => {
             );
           })}
         </div>
+      </div>
+    );
+  };
+
+  const renderBibleBooksSection = () => {
+    if (!bibleBooksData || !nonCanonicalBooksData) {
+      return <p className="text-center text-gray-500">No Bible books data available.</p>;
+    }
+
+    const categories = {
+      'Old Testament': bibleBooksData.oldTestament,
+      'New Testament': bibleBooksData.newTestament,
+      'Non-Canonical New Testament Books': nonCanonicalBooksData
+    };
+
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4 text-primaryBlue">Bible Books</h2>
+        {Object.entries(categories).map(([catName, books]) => (
+          <div key={catName} className="mb-8">
+            <h3 className="text-xl font-bold mb-4 text-funPink">{catName}</h3>
+            <div className="space-y-4">
+              {books.map((b) => {
+                const isOpen = openBooks[b.id] || false;
+                return (
+                  <div key={b.id} id={b.id} className="bg-white rounded-2xl shadow-xl border border-secondaryPurple overflow-hidden">
+                    <button
+                      onClick={() => toggleBook(b.id)}
+                      className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
+                      aria-expanded={isOpen}
+                      aria-label={`Toggle ${b.title}`}
+                    >
+                      <div className="flex-1 text-left">
+                        <h4 className="text-xl font-bold text-funPink">{b.title}</h4>
+                        {b.summary && (
+                          <p className="text-textGray text-sm mt-1 line-clamp-2">{b.summary}</p>
+                        )}
+                      </div>
+                      <svg
+                        className={`w-6 h-6 text-primaryBlue transition-transform duration-300 flex-shrink-0 ml-4 ${
+                          isOpen ? 'transform rotate-180' : ''
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {isOpen && (
+                      <div className="px-6 pb-6 border-t border-gray-200">
+                        {b.summary && (
+                          <p className="text-textGray mt-4">
+                            <span className="font-semibold">Summary:</span> {b.summary}
+                          </p>
+                        )}
+
+                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {b.author && (
+                            <p className="text-textGray">
+                              <span className="font-semibold">Author:</span> {b.author}
+                            </p>
+                          )}
+                          {b.date_range && (
+                            <p className="text-textGray">
+                              <span className="font-semibold">Date Range:</span> {b.date_range}
+                            </p>
+                          )}
+                        </div>
+
+                        {b.geographical_location && (
+                          <p className="text-textGray mt-4">
+                            <span className="font-semibold">Geographical Location:</span> {b.geographical_location}
+                          </p>
+                        )}
+
+                        {b.significance && (
+                          <p className="text-textGray mt-2">
+                            <span className="font-semibold">Significance:</span> {b.significance}
+                          </p>
+                        )}
+
+                        {b.why_included && (
+                          <p className="text-textGray mt-2">
+                            <span className="font-semibold">Why Included:</span> {b.why_included}
+                          </p>
+                        )}
+
+                        {b.reasons_not_included && (
+                          <p className="text-textGray mt-2">
+                            <span className="font-semibold">Reasons Not Included:</span> {b.reasons_not_included}
+                          </p>
+                        )}
+
+                        {b.analogy && (
+                          <p className="text-textGray mt-4 italic">
+                            <span className="font-semibold not-italic">Analogy:</span> {b.analogy}
+                          </p>
+                        )}
+
+                        {b.significant_verses && b.significant_verses.length > 0 && (
+                          <div className="mt-4">
+                            <p className="text-textGray font-semibold">Significant Verses:</p>
+                            <ul className="list-disc list-inside text-blue-500">
+                              {b.significant_verses.map((ref, idx) => {
+                                const { href, label } = linkForRef(ref);
+                                return (
+                                  <li key={idx}>
+                                    {href ? (
+                                      <Link to={href} className="hover:underline" aria-label={`Read ${label}`}>
+                                        {label}
+                                      </Link>
+                                    ) : (
+                                      <span>{label}</span>
+                                    )}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     );
   };
@@ -442,7 +584,6 @@ const Insights = () => {
 
       <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">Bible Insights</h1>
 
-      {/* Search */}
       <div className="relative mb-6 max-w-2xl mx-auto">
         <div className="relative">
           <input
@@ -470,7 +611,6 @@ const Insights = () => {
           )}
         </div>
 
-        {/* Search Results */}
         {isSearching && searchResults.length > 0 && (
           <div className="absolute z-50 w-full mt-2 bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl border-4 border-primaryBlue max-h-96 overflow-y-auto">
             <div className="p-4">
@@ -492,10 +632,10 @@ const Insights = () => {
                       <p className="text-sm text-gray-700 line-clamp-2">
                         {item.description || item.summary}
                       </p>
-                      {(item.context || item.historical_context) && (
+                      {(item.context || item.geographical_location) && (
                         <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                          <span className="font-semibold">Historical Context:</span>{' '}
-                          {item.context || item.historical_context}
+                          <span className="font-semibold">Geographical Location:</span>{' '}
+                          {item.context || item.geographical_location}
                         </p>
                       )}
                     </div>
@@ -515,7 +655,6 @@ const Insights = () => {
         )}
       </div>
 
-      {/* Tabs */}
       <div className="flex flex-wrap gap-4 mb-6 justify-center">
         <button
           onClick={() => setActiveTab('lineages')}
@@ -553,6 +692,15 @@ const Insights = () => {
         >
           Prophecies
         </button>
+        <button
+          onClick={() => setActiveTab('bibleBooks')}
+          className={`py-2 px-4 rounded-full text-sm font-semibold ${
+            activeTab === 'bibleBooks' ? 'bg-primaryBlue text-white' : 'bg-blue-800 text-white hover:bg-blue-700'
+          } transition-all duration-300 hover:scale-105`}
+          aria-label="View Bible Books"
+        >
+          Bible Books
+        </button>
         <Link
           to="/religions"
           className="py-2 px-4 rounded-full text-sm font-semibold bg-blue-800 text-white hover:bg-blue-700 transition-all duration-300 hover:scale-105"
@@ -562,11 +710,11 @@ const Insights = () => {
         </Link>
       </div>
 
-      {/* Content */}
       {activeTab === 'lineages' && renderSection(insightsData.lineages, 'Family Lineages')}
       {activeTab === 'historicalEvents' && renderSection(insightsData.historicalEvents, 'Historical Events')}
       {activeTab === 'parablesTeachings' && renderSection(insightsData.parablesTeachings, 'Jesus Parables & Teachings')}
       {activeTab === 'prophecies' && renderProphecySection()}
+      {activeTab === 'bibleBooks' && renderBibleBooksSection()}
     </div>
   );
 };
