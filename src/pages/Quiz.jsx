@@ -9,7 +9,7 @@ import { terminologyData } from '../data/terminologyData.js'; // Assuming this i
 const ResultsDetail = ({ questions, userAnswers, score, onTryAgain }) => {
   const total = questions.length;
   const percentage = (score / total) * 100;
-  const passed = percentage >= 75;
+  const passed = percentage >= 70;
 
   const linkForRef = (ref) => {
     if (!ref) return null;
