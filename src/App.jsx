@@ -22,6 +22,7 @@ import { BibleProvider } from './BibleContext.jsx';
 import { AuthProvider } from './AuthContext.jsx';
 import { ThemeProvider } from './ThemeContext.jsx';
 import Terminology from './pages/Terminology.jsx';
+import Quiz from './pages/Quiz.jsx';
 
 const App = () => {
   return (
@@ -50,6 +51,7 @@ const App = () => {
                 <Route path="/help" element={<Help />} />
                 <Route path="/about" element={<About />} />     
                 <Route path="/terminology" element={<Terminology />} />     
+                <Route path="/quiz" element={<Quiz />} />     
                 <Route path="*" element={<p className="text-center text-red-500 p-8">Page not found.</p>} />
               </Routes>
             </main>

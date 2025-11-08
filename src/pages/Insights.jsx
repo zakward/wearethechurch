@@ -584,6 +584,16 @@ const Insights = () => {
 
       <h1 className="text-4xl font-bold mb-8 text-primaryBlue text-center">Bible Insights</h1>
 
+      <div className="text-center mb-6">
+        <Link
+          to="/quiz"
+          className="py-2 px-4 rounded-full text-sm font-semibold bg-green-600 text-white hover:bg-green-700 transition-all duration-300 hover:scale-105"
+          aria-label="Take the Bible Quiz"
+        >
+          Test Your Knowledge - Take the Quiz!
+        </Link>
+      </div>
+
       <div className="relative mb-6 max-w-2xl mx-auto">
         <div className="relative">
           <input
