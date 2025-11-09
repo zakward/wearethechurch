@@ -1,9 +1,8 @@
-// ===== 3. FRONTEND: Notes.jsx (COMPLETE FILE) =====
-
 import React, { useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
-import { DbLoadingState, useDbLoading } from '../components/DbLoadingState';
+import DbLoadingState from '../components/DbLoadingState.jsx';
+import { useDbLoading } from '../components/useDbLoading.jsx';
 
 const Notes = () => {
   const { user, deleteNote, resetUnreadNotes } = useContext(AuthContext);

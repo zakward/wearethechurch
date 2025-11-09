@@ -1,8 +1,9 @@
-// ===== Forum.jsx =====
+// src/pages/Forum.jsx
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
-import { DbLoadingState, useDbLoading } from '../components/DbLoadingState';
+import DbLoadingState from '../components/DbLoadingState.jsx';
+import { useDbLoading } from '../components/useDbLoading.jsx';
 
 const categories = ['General Discussion', 'Questions', 'Testimonies', 'Bible Study', 'Prayer Requests'];
 
@@ -21,13 +22,21 @@ const Forum = () => {
   const [commentText, setCommentText] = useState({});
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
-  // Simulate loading forum posts
+  // Simulate loading forum posts with error handling
   useEffect(() => {
-    if (user && forumPosts !== undefined) {
-      // Once we have user and posts data, stop loading
-      stopLoading();
-    }
-  }, [user, forumPosts]);
+    const loadPosts = async () => {
+      try {
+        // Assuming fetchForumPosts is async in context
+        // If error, setLoadingError(err)
+        if (forumPosts !== undefined) {
+          stopLoading();
+        }
+      } catch (err) {
+        setLoadingError(err);
+      }
+    };
+    loadPosts();
+  }, [forumPosts]);
 
   if (!user) {
     return (

@@ -1,7 +1,8 @@
 import React, { useContext, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
-import { DbLoadingState, useDbLoading } from '../components/DbLoadingState';
+import DbLoadingState from '../components/DbLoadingState.jsx';
+import { useDbLoading } from '../components/useDbLoading.jsx';
 
 const Bookmarks = () => {
   const { user, unbookmark, resetUnreadBookmarks } = useContext(AuthContext);

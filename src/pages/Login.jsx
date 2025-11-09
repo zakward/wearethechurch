@@ -1,11 +1,12 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
+import LoadingMessage from '../components/LoadingMessage.jsx';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useContext(AuthContext);
+  const { login, loading } = useContext(AuthContext); // Use loading from context
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -50,15 +51,16 @@ const Login = () => {
         </div>
         <button
           type="submit"
+          disabled={loading}
           className="w-full bg-gradient-to-r from-primaryGreen to-primaryYellow hover:from-primaryYellow hover:to-primaryGreen text-textGray font-bold py-3 px-6 md:py-4 md:px-8 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:rotate-2 border-4 border-white text-base md:text-lg lg:text-xl"
         >
-          Log In 🚀
+          {loading ? 'Logging In...' : 'Log In 🚀'}
         </button>
       </form>
 
       <p className="text-center text-base md:text-lg">New here? <Link to="/signup" className="text-primaryBlue hover:underline font-bold">Sign up</Link></p>
 
-    
+      <LoadingMessage isLoading={loading} customMessage="Logging in..." />
     </div>
   );
 };
