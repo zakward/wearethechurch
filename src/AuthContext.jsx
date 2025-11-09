@@ -1,5 +1,5 @@
-// ===== FRONTEND: AuthContext.jsx (COMPLETE FILE) =====
 import React, { createContext, useState, useEffect } from 'react';
+import api from './api.js'; // The Axios instance
 import {
   signup as apiSignup,
   login as apiLogin,
@@ -19,7 +19,7 @@ import {
   deleteForumPost as apiDeleteForumPost,
   deleteComment as apiDeleteComment,
   highlightVerse as apiHighlightVerse,
-} from './api';
+} from './api.js';
 
 export const AuthContext = createContext();
 
@@ -75,15 +75,42 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('currentUser', JSON.stringify(profile));
         } catch (err) {
           console.error('Failed to load profile from API:', err);
-          // Keep cached if API fails (e.g., offline)
+          // If 401, interceptor will handle logout
         }
       }
 
       setLoading(false);
     };
 
+    // Set up Axios interceptors
+    const requestInterceptor = api.interceptors.request.use((config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    }, (error) => Promise.reject(error));
+
+    const responseInterceptor = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          console.log('401 Unauthorized detected - Logging out...');
+          logout();
+          // Optionally redirect: window.location.href = '/login';
+        }
+        return Promise.reject(error);
+      }
+    );
+
     loadUser();
     fetchForumPosts();
+
+    // Clean up interceptors on unmount
+    return () => {
+      api.interceptors.request.eject(requestInterceptor);
+      api.interceptors.response.eject(responseInterceptor);
+    };
   }, []);
 
   // Persist readerSettings whenever they change

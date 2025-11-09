@@ -1,38 +1,16 @@
-// Updated src/api.js
-// Added deleteNote for full CRUD on notes.
+// src/api.js
+import axios from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 console.log('API URL:', BASE_URL); // For debugging
-const getToken = () => (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
 
-const apiRequest = async (endpoint, method = 'GET', body = null, headers = {}) => {
-  const token = getToken();
-  const config = {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
-  };
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  if (body) {
-    config.body = JSON.stringify(body);
-  }
-  try {
-    const response = await fetch(`${BASE_URL}${endpoint}`, config);
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.msg || 'API request failed');
-    }
-    return response.json();
-  } catch (err) {
-    console.error(`API error for ${endpoint}:`, err);
-    throw err;
-  }
-};
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 // Auth
 export const signup = (name, email, password) => apiRequest('/auth/signup', 'POST', { name, email, password });
@@ -76,4 +54,26 @@ export const addComment = (postId, text) => apiRequest(`/forum/${postId}/comment
 export const updateComment = (postId, commentIndex, text) => apiRequest(`/forum/${postId}/comment/${commentIndex}`, 'PUT', { text });
 export const deleteComment = (postId, commentIndex) => apiRequest(`/forum/${postId}/comment/${commentIndex}`, 'DELETE');
 
-// Add more as needed (e.g., getAllUsers: apiRequest('/user/all'))
+// Wrapper function for requests (keeps your existing API calls compatible)
+const apiRequest = async (endpoint, method = 'GET', data = null) => {
+  try {
+    const config = {
+      method,
+      url: endpoint,
+    };
+    if (data) {
+      config.data = data;
+    }
+    const response = await api(config);
+    return response.data;
+  } catch (err) {
+    // Axios errors are in err.response
+    if (err.response?.status === 401) {
+      console.error('API 401 error - Token invalid/expired');
+      // Logout handled by interceptor (see AuthContext)
+    }
+    throw new Error(err.response?.data?.msg || 'API request failed');
+  }
+};
+
+export default api; // Export instance for interceptors
