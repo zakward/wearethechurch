@@ -19,6 +19,8 @@ import {
   deleteForumPost as apiDeleteForumPost,
   deleteComment as apiDeleteComment,
   highlightVerse as apiHighlightVerse,
+  addReaction as apiAddReaction,
+  removeReaction as apiRemoveReaction,
 } from './api.js';
 
 export const AuthContext = createContext();
@@ -340,6 +342,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const addReaction = async (postId, commentIndex = null, reactionType) => {
+    if (!user) return;
+    try {
+      console.log('Adding reaction:', { postId, commentIndex, reactionType });
+      const updatedPost = await apiAddReaction(postId, commentIndex, reactionType);
+      setForumPosts(prev => prev.map(p => p._id === postId ? updatedPost : p));
+    } catch (err) {
+      console.error('Error adding reaction:', err);
+    }
+  };
+
+  const removeReaction = async (postId, commentIndex = null, reactionType) => {
+    if (!user) return;
+    try {
+      const updatedPost = await apiRemoveReaction(postId, commentIndex, reactionType);
+      setForumPosts(prev => prev.map(p => p._id === postId ? updatedPost : p));
+    } catch (err) {
+      console.error('Error removing reaction:', err);
+    }
+  };
+
   // NEW: Helper to update reader settings
   const updateReaderSettings = (partial) => {
     setReaderSettings(prev => ({ ...prev, ...partial }));
@@ -374,6 +397,8 @@ export const AuthProvider = ({ children }) => {
         addComment,
         deleteForumPost,
         deleteComment,
+        addReaction,
+        removeReaction,
       }}
     >
       {children}

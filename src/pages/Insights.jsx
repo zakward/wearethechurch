@@ -4,9 +4,154 @@ import { AuthContext } from '../AuthContext.jsx';
 import { insightsData } from '../data/InsightsData.js';
 import { prophecyData } from '../data/prophecyData.jsx';
 import { bibleBooksData, nonCanonicalBooksData } from '../data/BibleBooksAuthorData.js';
+import { terminologyData } from '../data/terminologyData.js';
+import { peopleData } from '../data/BibleTranslations/peopleData.jsx';
+
+const GlossarySection = ({ searchQuery }) => {
+  const [sortOption, setSortOption] = useState('a_to_z');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const itemsPerPage = 20;
+
+  const filteredTerms = terminologyData.filter(term =>
+    term.term.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const sortedTerms = [...filteredTerms].sort((a, b) => {
+    if (sortOption === 'a_to_z') {
+      return a.term.localeCompare(b.term);
+    } else if (sortOption === 'z_to_a') {
+      return b.term.localeCompare(a.term);
+    } else if (sortOption === 'by_book') {
+      return a.references.localeCompare(b.references);
+    }
+    return 0;
+  });
+
+  const totalTerms = sortedTerms.length;
+  const totalPages = Math.ceil(totalTerms / itemsPerPage);
+  const paginatedTerms = sortedTerms.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => setIsLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, sortOption, currentPage]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleJumpToPage = (e) => {
+    const page = parseInt(e.target.value, 10);
+    if (page >= 1 && page <= totalPages && !isNaN(page)) {
+      handlePageChange(page);
+    }
+  };
+
+  if (!terminologyData) {
+    return <p className="text-center text-gray-200">No glossary data available.</p>;
+  }
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4 text-blue-300">Biblical Glossary</h2>
+
+      <div className="mb-6 p-4 bg-gray-800 rounded-xl shadow-lg sticky top-0 z-10 border border-gray-600">
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+          <div className="w-full sm:w-1/3">
+            <label htmlFor="sort" className="block text-sm font-medium text-gray-200 mb-1">Sort By</label>
+            <select
+              id="sort"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+              aria-label="Sort terms"
+            >
+              <option value="a_to_z">A to Z</option>
+              <option value="z_to_a">Z to A</option>
+              <option value="by_book">By Book (Reference)</option>
+            </select>
+          </div>
+        </div>
+        <p className="text-center text-gray-200 mt-4">
+          Showing <span className="font-semibold">{totalTerms}</span> terms (Page {currentPage} of {totalPages})
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="bg-gray-700 p-4 rounded-lg shadow animate-pulse">
+              <div className="h-6 bg-gray-500 rounded mb-2"></div>
+              <div className="h-4 bg-gray-500 rounded"></div>
+            </div>
+          ))}
+        </div>
+      ) : totalTerms === 0 ? (
+        <p className="text-center text-gray-200">No terms match the current criteria.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {paginatedTerms.map((term, index) => (
+            <div
+              key={index}
+              className="bg-gray-800 p-4 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 border border-gray-600"
+            >
+              <h3 className="text-lg font-semibold text-blue-300">{term.term}</h3>
+              <p className="text-gray-200 text-sm">{term.definition}</p>
+              <p className="text-gray-400 text-xs mt-1">{term.references}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="py-2 px-4 rounded-full bg-blue-700 text-white font-medium disabled:bg-gray-500 hover:bg-blue-500 transition-all duration-200"
+            aria-label="Go to previous page"
+          >
+            Previous
+          </button>
+          <div className="flex gap-2">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`py-1 px-3 rounded-full ${currentPage === page ? 'bg-blue-700 text-white' : 'bg-gray-700 text-gray-200 hover:bg-gray-600'} transition-all duration-200`}
+                aria-label={`Go to page ${page}`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="py-2 px-4 rounded-full bg-blue-700 text-white font-medium disabled:bg-gray-500 hover:bg-blue-500 transition-all duration-200"
+            aria-label="Go to next page"
+          >
+            Next
+          </button>
+          <input
+            type="number"
+            min="1"
+            max={totalPages}
+            placeholder="Page"
+            onChange={handleJumpToPage}
+            className="w-20 p-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-200 text-center"
+            aria-label="Jump to specific page"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Insights = () => {
-  const { user, readerSettings, updateReaderSettings } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('lineages');
@@ -15,99 +160,37 @@ const Insights = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [openProphecies, setOpenProphecies] = useState({});
   const [openBooks, setOpenBooks] = useState({});
+  const [openPersons, setOpenPersons] = useState({});
 
-  // Mode, font size, font family from settings
-  const mode = readerSettings?.mode || 'light';
-  const fontSize = readerSettings?.fontSize || 'base';
-  const fontFamily = readerSettings?.fontFamily || 'friendly';
+  // Hardcoded dark mode classes
+  const bgClass = 'bg-gray-800';
+  const textClass = 'text-gray-200';
+  const headerClass = 'text-blue-300';
+  const accentClass = 'text-pink-300';
+  const borderClass = 'border-gray-600';
+  const hoverBg = 'hover:bg-gray-700';
+  const searchBg = 'bg-gradient-to-br from-gray-800 to-gray-600';
+  const searchBorder = 'border-blue-500';
+  const dropdownBg = 'bg-gray-800';
+  const linkColor = 'text-blue-300';
+  const buttonBg = 'bg-blue-700';
+  const buttonText = 'text-white';
+  const hoverButtonBg = 'hover:bg-blue-500';
+  const grayBg = 'bg-gray-700';
+  const grayBorder = 'border-gray-500';
+  const inputBg = 'bg-gray-700';
+  const selectorBg = 'bg-gray-700';
+  const selectorText = 'text-gray-200';
 
-  // Dynamic classes
-  let bgClass = 'bg-white';
-  let textClass = 'text-textGray';
-  let headerClass = 'text-primaryBlue';
-  let accentClass = 'text-funPink';
-  let borderClass = 'border-secondaryPurple';
-  let hoverBg = 'hover:bg-gray-50';
-  let searchBg = 'bg-gradient-to-br from-white to-blue-50';
-  let searchBorder = 'border-primaryBlue';
-  let dropdownBg = 'bg-white';
-  let linkColor = 'text-blue-500';
-  let buttonBg = 'bg-primaryBlue';
-  let buttonText = 'text-white';
-  let hoverButtonBg = 'hover:bg-blue-700';
-  let grayBg = 'bg-gray-50';
-  let grayBorder = 'border-gray-200';
-  let inputBg = 'bg-white';
-  let selectorBg = 'bg-white';
-  let selectorText = 'text-gray-800';
-
-  if (mode === 'dark') {
-    bgClass = 'bg-gray-800';
-    textClass = 'text-gray-200';
-    headerClass = 'text-blue-300';
-    accentClass = 'text-pink-300';
-    borderClass = 'border-gray-600';
-    hoverBg = 'hover:bg-gray-700';
-    searchBg = 'bg-gradient-to-br from-gray-800 to-gray-600';
-    searchBorder = 'border-blue-500';
-    dropdownBg = 'bg-gray-800';
-    linkColor = 'text-blue-300';
-    buttonBg = 'bg-blue-700';
-    buttonText = 'text-white';
-    hoverButtonBg = 'hover:bg-blue-500';
-    grayBg = 'bg-gray-700';
-    grayBorder = 'border-gray-500';
-    inputBg = 'bg-gray-700';
-    selectorBg = 'bg-gray-700';
-    selectorText = 'text-gray-200';
-  } else if (mode === 'sepia') {
-    bgClass = 'bg-[#E8D9B8]';
-    textClass = 'text-[#5F4B32]';
-    headerClass = 'text-[#8B4513]';
-    accentClass = 'text-[#A0522D]';
-    borderClass = 'border-[#D2B48C]';
-    hoverBg = 'hover:bg-[#D2B48C]';
-    searchBg = 'bg-gradient-to-br from-[#FBF0D9] to-[#E8D9B8]';
-    searchBorder = 'border-[#8B4513]';
-    dropdownBg = 'bg-[#FBF0D9]';
-    linkColor = 'text-[#5F4B32]';
-    buttonBg = 'bg-[#A0522D]';
-    buttonText = 'text-white';
-    hoverButtonBg = 'hover:bg-[#8B4513]';
-    grayBg = 'bg-[#D2B48C]';
-    grayBorder = 'border-[#A0522D]';
-    inputBg = 'bg-[#FBF0D9]';
-    selectorBg = 'bg-[#FBF0D9]';
-    selectorText = 'text-[#5F4B32]';
-  } else if (mode === 'high-contrast') {
-    bgClass = 'bg-black';
-    textClass = 'text-yellow-300';
-    headerClass = 'text-yellow-400';
-    accentClass = 'text-red-300';
-    borderClass = 'border-white';
-    hoverBg = 'hover:bg-gray-800';
-    searchBg = 'bg-gradient-to-br from-black to-gray-800';
-    searchBorder = 'border-yellow-300';
-    dropdownBg = 'bg-black';
-    linkColor = 'text-white';
-    buttonBg = 'bg-blue-500';
-    buttonText = 'text-white';
-    hoverButtonBg = 'hover:bg-blue-300';
-    grayBg = 'bg-gray-900';
-    grayBorder = 'border-white';
-    inputBg = 'bg-gray-900';
-    selectorBg = 'bg-gray-900';
-    selectorText = 'text-yellow-300';
-  }
-
-  const sizeClass = fontSize === 'base' ? 'text-base' : fontSize === 'lg' ? 'text-lg' : 'text-xl';
-  const familyClass = fontFamily === 'friendly' ? 'font-friendly' : fontFamily === 'serif' ? 'font-serif' : 'font-sans';
+  // Hardcoded font and size
+  const sizeClass = 'text-base';
+  const familyClass = 'font-friendly';
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
     const id = params.get('id');
-    if (tab && ['lineages', 'historicalEvents', 'parablesTeachings', 'prophecies', 'bibleBooks'].includes(tab)) {
+    if (tab && ['lineages', 'historicalEvents', 'parablesTeachings', 'prophecies', 'bibleBooks', 'people', 'glossary'].includes(tab)) {
       setActiveTab(tab);
     }
     if (id) {
@@ -115,6 +198,8 @@ const Insights = () => {
         setOpenProphecies(prev => ({ ...prev, [id]: true }));
       } else if (tab === 'bibleBooks') {
         setOpenBooks(prev => ({ ...prev, [id]: true }));
+      } else if (tab === 'people') {
+        setOpenPersons(prev => ({ ...prev, [id]: true }));
       }
       setTimeout(() => {
         const element = document.getElementById(id);
@@ -135,7 +220,6 @@ const Insights = () => {
     const query = searchQuery.toLowerCase();
     const results = [];
 
-    // Search in existing insights categories
     Object.entries(insightsData).forEach(([category, items]) => {
       items.forEach((item) => {
         const titleMatch = item.title?.toLowerCase().includes(query);
@@ -158,7 +242,6 @@ const Insights = () => {
       });
     });
 
-    // Search in prophecies
     if (Array.isArray(prophecyData)) {
       prophecyData.forEach((item) => {
         const titleMatch = item.title?.toLowerCase().includes(query);
@@ -187,7 +270,6 @@ const Insights = () => {
       });
     }
 
-    // Search in bible books
     [...bibleBooksData.oldTestament, ...bibleBooksData.newTestament, ...nonCanonicalBooksData].forEach((item) => {
       const titleMatch = item.title?.toLowerCase().includes(query);
       const authorMatch = item.author?.toLowerCase().includes(query);
@@ -207,6 +289,49 @@ const Insights = () => {
         });
       }
     });
+
+    const allPersons = [...peopleData.oldTestament, ...peopleData.newTestament];
+    allPersons.forEach((item) => {
+      const nameMatch = item.name?.toLowerCase().includes(query);
+      const titleMatch = item.title?.toLowerCase().includes(query);
+      const familyMatch = item.family?.toLowerCase().includes(query);
+      const referencesMatch = item.references?.toLowerCase().includes(query);
+      const importanceMatch = item.importance?.toLowerCase().includes(query);
+      const deathMatch = item.death?.toLowerCase().includes(query);
+      const chronologyMatch = item.chronology?.toString().includes(query);
+      const biblicalEventsMatch = item.biblicalEvents?.toLowerCase().includes(query);
+      const theologicalSignificanceMatch = item.theologicalSignificance?.toLowerCase().includes(query);
+      const historicalNoteMatch = item.historicalNote?.toLowerCase().includes(query);
+
+      if (nameMatch || titleMatch || familyMatch || referencesMatch || importanceMatch || deathMatch || biblicalEventsMatch || theologicalSignificanceMatch || historicalNoteMatch) {
+        results.push({
+          ...item,
+          id: item.name.replace(/\s/g, '-').toLowerCase(),
+          category: 'people',
+          categoryName: 'People',
+          title: item.name
+        });
+      }
+    });
+
+    if (Array.isArray(terminologyData)) {
+      terminologyData.forEach((item) => {
+        const termMatch = item.term?.toLowerCase().includes(query);
+        const definitionMatch = item.definition?.toLowerCase().includes(query);
+        const referencesMatch = item.references?.toLowerCase().includes(query);
+
+        if (termMatch || definitionMatch || referencesMatch) {
+          results.push({
+            ...item,
+            id: item.term.replace(/\s/g, '-').toLowerCase(),
+            category: 'glossary',
+            categoryName: 'Glossary',
+            title: item.term,
+            summary: item.definition
+          });
+        }
+      });
+    }
 
     setSearchResults(results);
   }, [searchQuery]);
@@ -236,6 +361,13 @@ const Insights = () => {
 
   const toggleBook = (id) => {
     setOpenBooks(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const togglePerson = (id) => {
+    setOpenPersons(prev => ({
       ...prev,
       [id]: !prev[id]
     }));
@@ -657,6 +789,254 @@ const Insights = () => {
     );
   };
 
+  const renderPeopleSection = () => {
+    if (!peopleData) {
+      return <p className={`text-center ${textClass}`}>No people data available.</p>;
+    }
+
+    const categories = {
+      'Old Testament': peopleData.oldTestament,
+      'New Testament': peopleData.newTestament
+    };
+
+    return (
+      <div>
+        <h2 className={`text-2xl font-bold mb-4 ${headerClass}`}>Biblical People</h2>
+        {Object.entries(categories).map(([catName, persons]) => (
+          <div key={catName} className="mb-8">
+            <h3 className={`text-xl font-bold mb-4 ${accentClass}`}>{catName}</h3>
+            <div className="space-y-4">
+              {persons.map((person) => {
+                const id = person.name.replace(/\s/g, '-').toLowerCase();
+                const isOpen = openPersons[id] || false;
+                return (
+                  <div key={id} id={id} className={`${bgClass} rounded-2xl shadow-xl border ${borderClass} overflow-hidden`}>
+                    <button
+                      onClick={() => togglePerson(id)}
+                      className={`w-full p-6 flex items-center justify-between ${hoverBg} transition-colors duration-200`}
+                      aria-expanded={isOpen}
+                      aria-label={`Toggle ${person.name}`}
+                    >
+                      <div className="flex-1 text-left">
+                        <h4 className={`text-xl font-bold ${accentClass}`}>{person.name}</h4>
+                        {person.title && (
+                          <p className={`${textClass} text-sm mt-1 line-clamp-2`}>{person.title}</p>
+                        )}
+                      </div>
+                      <svg
+                        className={`w-6 h-6 ${linkColor} transition-transform duration-300 flex-shrink-0 ml-4 ${
+                          isOpen ? 'transform rotate-180' : ''
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {isOpen && (
+                      <div className={`px-6 pb-6 border-t ${grayBorder}`}>
+                        {person.title && (
+                          <p className={`${textClass} mt-4`}>
+                            <span className="font-semibold">Title:</span> {person.title}
+                          </p>
+                        )}
+                        {person.family && (
+                          <p className={`${textClass} mt-2`}>
+                            <span className="font-semibold">Family:</span> {person.family}
+                          </p>
+                        )}
+                        {person.references && (
+                          <p className={`${textClass} mt-2`}>
+                            <span className="font-semibold">References:</span> {person.references}
+                          </p>
+                        )}
+                        {person.importance && (
+                          <p className={`${textClass} mt-2`}>
+                            <span className="font-semibold">Importance:</span> {person.importance}
+                          </p>
+                        )}
+                        {person.death && (
+                          <p className={`${textClass} mt-2`}>
+                            <span className="font-semibold">Death:</span> {person.death}
+                          </p>
+                        )}
+                        {person.chronology && (
+                          <p className={`${textClass} mt-2`}>
+                            <span className="font-semibold">Chronology:</span> {person.chronology}
+                          </p>
+                        )}
+                        {person.biblicalEvents && (
+                          <p className={`${textClass} mt-2`}>
+                            <span className="font-semibold">Biblical Events:</span> {person.biblicalEvents}
+                          </p>
+                        )}
+                        {person.theologicalSignificance && (
+                          <p className={`${textClass} mt-2`}>
+                            <span className="font-semibold">Theological Significance:</span> {person.theologicalSignificance}
+                          </p>
+                        )}
+                        {person.historicalNote && (
+                          <p className={`${textClass} mt-2`}>
+                            <span className="font-semibold">Historical Note:</span> {person.historicalNote}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderGlossarySection = () => {
+    const [sortOption, setSortOption] = useState('a_to_z');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(true);
+    const itemsPerPage = 20;
+
+    const filteredTerms = terminologyData.filter(term =>
+      term.term.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const sortedTerms = [...filteredTerms].sort((a, b) => {
+      if (sortOption === 'a_to_z') {
+        return a.term.localeCompare(b.term);
+      } else if (sortOption === 'z_to_a') {
+        return b.term.localeCompare(a.term);
+      } else if (sortOption === 'by_book') {
+        return a.references.localeCompare(b.references);
+      }
+      return 0;
+    });
+
+    const totalTerms = sortedTerms.length;
+    const totalPages = Math.ceil(totalTerms / itemsPerPage);
+    const paginatedTerms = sortedTerms.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    useEffect(() => {
+      setIsLoading(true);
+      const timer = setTimeout(() => setIsLoading(false), 300);
+      return () => clearTimeout(timer);
+    }, [searchQuery, sortOption, currentPage]);
+
+    const handlePageChange = (page) => {
+      setCurrentPage(page);
+    };
+
+    const handleJumpToPage = (e) => {
+      const page = parseInt(e.target.value, 10);
+      if (page >= 1 && page <= totalPages && !isNaN(page)) {
+        handlePageChange(page);
+      }
+    };
+
+    if (!terminologyData) {
+      return <p className={`text-center ${textClass}`}>No glossary data available.</p>;
+    }
+
+    return (
+      <div>
+        <h2 className={`text-2xl font-bold mb-4 ${headerClass}`}>Biblical Glossary</h2>
+
+        <div className="mb-6 p-4 bg-white rounded-xl shadow-lg sticky top-0 z-10 border border-gray-200">
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+            <div className="w-full sm:w-1/3">
+              <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+              <select
+                id="sort"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                aria-label="Sort terms"
+              >
+                <option value="a_to_z">A to Z</option>
+                <option value="z_to_a">Z to A</option>
+                <option value="by_book">By Book (Reference)</option>
+              </select>
+            </div>
+          </div>
+          <p className="text-center text-gray-600 mt-4">
+            Showing <span className="font-semibold">{totalTerms}</span> terms (Page {currentPage} of {totalPages})
+          </p>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="bg-gray-100 p-4 rounded-lg shadow animate-pulse">
+                <div className="h-6 bg-gray-300 rounded mb-2"></div>
+                <div className="h-4 bg-gray-300 rounded"></div>
+              </div>
+            ))}
+          </div>
+        ) : totalTerms === 0 ? (
+          <p className="text-center text-gray-600">No terms match the current criteria.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedTerms.map((term, index) => (
+              <div
+                key={index}
+                className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 border border-gray-200"
+              >
+                <h3 className="text-lg font-semibold text-blue-600">{term.term}</h3>
+                <p className="text-gray-600 text-sm">{term.definition}</p>
+                <p className="text-gray-500 text-xs mt-1">{term.references}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="py-2 px-4 rounded-full bg-blue-600 text-white font-medium disabled:bg-gray-400 hover:bg-blue-700 transition-all duration-200"
+              aria-label="Go to previous page"
+            >
+              Previous
+            </button>
+            <div className="flex gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`py-1 px-3 rounded-full ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'} transition-all duration-200`}
+                  aria-label={`Go to page ${page}`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="py-2 px-4 rounded-full bg-blue-600 text-white font-medium disabled:bg-gray-400 hover:bg-blue-700 transition-all duration-200"
+              aria-label="Go to next page"
+            >
+              Next
+            </button>
+            <input
+              type="number"
+              min="1"
+              max={totalPages}
+              placeholder="Page"
+              onChange={handleJumpToPage}
+              className="w-20 p-2 border border-gray-300 rounded-lg text-center"
+              aria-label="Jump to specific page"
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className={`relative container mx-auto px-4 py-8 max-w-7xl ${bgClass} ${textClass} ${sizeClass} ${familyClass}`}>
       <button
@@ -670,53 +1050,6 @@ const Insights = () => {
       </button>
 
       <h1 className={`text-4xl font-bold mb-8 ${headerClass} text-center`}>Bible Insights</h1>
-
-      {/* Settings selectors */}
-      <div className="flex flex-wrap gap-4 justify-center mb-6">
-        <Selector
-          id="mode"
-          label="Mode"
-          value={mode}
-          onChange={(e) => updateReaderSettings({ mode: e.target.value })}
-          options={[
-            { value: 'light', text: 'Light' },
-            { value: 'dark', text: 'Dark' },
-            { value: 'sepia', text: 'Sepia' },
-            { value: 'high-contrast', text: 'High Contrast' },
-          ]}
-          bgClass={selectorBg}
-          textClass={selectorText}
-          labelClass={headerClass}
-        />
-        <Selector
-          id="fontSize"
-          label="Font Size"
-          value={fontSize}
-          onChange={(e) => updateReaderSettings({ fontSize: e.target.value })}
-          options={[
-            { value: 'base', text: 'Base' },
-            { value: 'lg', text: 'Large' },
-            { value: 'xl', text: 'X-Large' },
-          ]}
-          bgClass={selectorBg}
-          textClass={selectorText}
-          labelClass={headerClass}
-        />
-        <Selector
-          id="fontFamily"
-          label="Font Family"
-          value={fontFamily}
-          onChange={(e) => updateReaderSettings({ fontFamily: e.target.value })}
-          options={[
-            { value: 'friendly', text: 'Friendly' },
-            { value: 'serif', text: 'Serif' },
-            { value: 'sans', text: 'Sans' },
-          ]}
-          bgClass={selectorBg}
-          textClass={selectorText}
-          labelClass={headerClass}
-        />
-      </div>
 
       <div className="text-center mb-6">
         <Link
@@ -799,7 +1132,8 @@ const Insights = () => {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-4 mb-6 justify-center">
+      {/* Desktop Tabs */}
+      <div className="hidden md:flex overflow-x-auto gap-4 mb-6 justify-center">
         <button
           onClick={() => setActiveTab('lineages')}
           className={`py-2 px-4 rounded-full text-sm font-semibold ${activeTab === 'lineages' ? `${buttonBg} ${buttonText}` : `bg-blue-800 ${buttonText} ${hoverButtonBg}`} transition-all duration-300 hover:scale-105`}
@@ -835,9 +1169,48 @@ const Insights = () => {
         >
           Bible Books
         </button>
+        <button
+          onClick={() => setActiveTab('people')}
+          className={`py-2 px-4 rounded-full text-sm font-semibold ${activeTab === 'people' ? `${buttonBg} ${buttonText}` : `bg-blue-800 ${buttonText} ${hoverButtonBg}`} transition-all duration-300 hover:scale-105`}
+          aria-label="View Biblical Persons"
+        >
+          People
+        </button>
+        <button
+          onClick={() => setActiveTab('glossary')}
+          className={`py-2 px-4 rounded-full text-sm font-semibold ${activeTab === 'glossary' ? `${buttonBg} ${buttonText}` : `bg-blue-800 ${buttonText} ${hoverButtonBg}`} transition-all duration-300 hover:scale-105`}
+          aria-label="View Biblical Glossary"
+        >
+          Glossary
+        </button>
         <Link
           to="/religions"
           className={`py-2 px-4 rounded-full text-sm font-semibold ${buttonBg} ${buttonText} ${hoverButtonBg} transition-all duration-300 hover:scale-105`}
+          aria-label="View Religions and Denominations"
+        >
+          Religions & Denominations
+        </Link>
+      </div>
+
+      {/* Mobile Dropdown */}
+      <div className="md:hidden mb-6">
+        <select
+          value={activeTab}
+          onChange={(e) => setActiveTab(e.target.value)}
+          className={`w-full p-3 border ${borderClass} rounded-lg ${inputBg} ${textClass} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          aria-label="Select Insight Category"
+        >
+          <option value="lineages">Family Lineages</option>
+          <option value="historicalEvents">Historical Events</option>
+          <option value="parablesTeachings">Jesus Parables & Teachings</option>
+          <option value="prophecies">Prophecies</option>
+          <option value="bibleBooks">Bible Books</option>
+          <option value="people">People</option>
+          <option value="glossary">Glossary</option>
+        </select>
+        <Link
+          to="/religions"
+          className={`block mt-2 py-2 px-4 rounded-full text-sm font-semibold text-center ${buttonBg} ${buttonText} ${hoverButtonBg} transition-all duration-300 hover:scale-105`}
           aria-label="View Religions and Denominations"
         >
           Religions & Denominations
@@ -849,24 +1222,10 @@ const Insights = () => {
       {activeTab === 'parablesTeachings' && renderSection(insightsData.parablesTeachings, 'Jesus Parables & Teachings')}
       {activeTab === 'prophecies' && renderProphecySection()}
       {activeTab === 'bibleBooks' && renderBibleBooksSection()}
+      {activeTab === 'people' && renderPeopleSection()}
+      {activeTab === 'glossary' && <GlossarySection searchQuery={searchQuery} />}
     </div>
   );
 };
-
-const Selector = ({ id, label, value, onChange, options, bgClass, textClass, labelClass }) => (
-  <div className="flex flex-col">
-    <label htmlFor={id} className={`text-sm font-medium mb-1 ${labelClass || 'text-gray-700'}`}>
-      {label}
-    </label>
-    <select
-      id={id}
-      value={value}
-      onChange={onChange}
-      className={`p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${bgClass || 'bg-white'} ${textClass || 'text-gray-800'}`}
-    >
-      {options.map(opt => <option key={opt.value} value={opt.value}>{opt.text}</option>)}
-    </select>
-  </div>
-);
 
 export default Insights;

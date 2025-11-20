@@ -11,8 +11,6 @@ const BibleReader = () => {
     markCompleted,
     currentTranslation,
     setCurrentTranslation,
-    readerSettings,
-    updateReaderSettings,
   } = useContext(BibleContext);
 
   const {
@@ -29,7 +27,6 @@ const BibleReader = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [mode, setMode] = useState(readerSettings?.mode || 'light');
   const [activeVerse, setActiveVerse] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
@@ -45,25 +42,6 @@ const BibleReader = () => {
 
   const chapterData = bookData && selectedChapter in bookData ? bookData[selectedChapter] : null;
   const verses = chapterData ? Object.keys(chapterData).sort((a, b) => Number(a) - Number(b)) : [];
-
-  // Sync translation only once on mount
-  useEffect(() => {
-    if (readerSettings?.version) {
-      setCurrentTranslation(readerSettings.version);
-    }
-    // eslint-disable-next-line
-  }, []); // Only on mount
-
-  // Listen for settings changes after mount
-  useEffect(() => {
-    if (
-      readerSettings?.version &&
-      currentTranslation !== readerSettings.version
-    ) {
-      setCurrentTranslation(readerSettings.version);
-    }
-    // eslint-disable-next-line
-  }, [readerSettings?.version]);
 
   // Sync URL → component state on load
   useEffect(() => {
@@ -89,8 +67,8 @@ const BibleReader = () => {
         const element = document.getElementById(`verse-${hashVerse}`);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          element.classList.add('bg-blue-200');
-          setTimeout(() => element.classList.remove('bg-blue-200'), 3000);
+          element.classList.add('bg-blue-900');
+          setTimeout(() => element.classList.remove('bg-blue-900'), 3000);
         }
       }
     }
@@ -128,51 +106,19 @@ const BibleReader = () => {
     addInsights(insightsData.lineages || [], 'lineages');
   }
 
-  // Theme classes
-  const fontSize = readerSettings?.fontSize || 'base';
-  const fontFamily = readerSettings?.fontFamily || 'friendly';
-  const sizeClass = fontSize === 'base' ? 'text-base' : fontSize === 'lg' ? 'text-lg' : 'text-xl';
-  const familyClass =
-    fontFamily === 'friendly' ? 'font-friendly' : fontFamily === 'serif' ? 'font-serif' : 'font-sans';
+  // Hardcoded dark mode classes
+  const modeClass = 'bg-gray-800 text-gray-200';
+  const dropdownClass = 'bg-gray-800 text-gray-200 shadow-lg shadow-gray-900/50';
+  const hoverClass = 'hover:bg-gray-700';
+  const savedColor = 'text-blue-300';
+  const bookmarkColor = 'text-red-300';
+  const noteColor = 'text-green-300';
+  const insightColor = 'text-purple-300';
+  const keyText = 'text-white';
 
-  // Dynamic palette
-  let modeClass = 'bg-white text-textGray';
-  let dropdownClass = 'bg-white text-gray-800 shadow-md';
-  let hoverClass = 'hover:bg-gray-100';
-  let savedColor = 'text-blue-500';
-  let bookmarkColor = 'text-red-500';
-  let noteColor = 'text-green-500';
-  let insightColor = 'text-purple-500';
-  let keyText = 'text-primaryBlue';
-
-  if (mode === 'dark') {
-    modeClass = 'bg-gray-800 text-gray-200';
-    dropdownClass = 'bg-gray-800 text-gray-200 shadow-lg shadow-gray-900/50';
-    hoverClass = 'hover:bg-gray-700';
-    savedColor = 'text-blue-300';
-    bookmarkColor = 'text-red-300';
-    noteColor = 'text-green-300';
-    insightColor = 'text-purple-300';
-    keyText = 'text-white';
-  } else if (mode === 'sepia') {
-    modeClass = 'bg-[#FBF0D9] text-[#5F4B32]';
-    dropdownClass = 'bg-[#FBF0D9] text-[#5F4B32] shadow-md shadow-[#5F4B32]/20';
-    hoverClass = 'hover:bg-[#E8D9B8]';
-    savedColor = 'text-[#3F2B1E]';
-    bookmarkColor = 'text-[#8B4513]';
-    noteColor = 'text-[#2E8B57]';
-    insightColor = 'text-[#4B0082]';
-    keyText = 'text-[#5F4B32]';
-  } else if (mode === 'high-contrast') {
-    modeClass = 'bg-black text-yellow-300';
-    dropdownClass = 'bg-black text-yellow-300 shadow-md shadow-white/10';
-    hoverClass = 'hover:bg-gray-900';
-    savedColor = 'text-yellow-500';
-    bookmarkColor = 'text-red-400';
-    noteColor = 'text-green-400';
-    insightColor = 'text-purple-400';
-    keyText = 'text-yellow-300';
-  }
+  // Hardcoded font and size
+  const sizeClass = 'text-base';
+  const familyClass = 'font-friendly';
 
   // Note handlers
   const handleOpenNoteModal = (v) => {
@@ -273,14 +219,14 @@ const BibleReader = () => {
 
   // UI rendering
   if (!currentBibleData)
-    return <div className="text-center p-8">Loading Bible data...</div>;
+    return <div className="text-center p-8 text-gray-200">Loading Bible data...</div>;
 
   return (
-    <div className={`relative p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-white ${modeClass} ${sizeClass} ${familyClass}`}>
+    <div className={`relative p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-gray-600 ${modeClass} ${sizeClass} ${familyClass}`}>
       {/* Back arrow */}
       <button
         onClick={() => navigate('/bible')}
-        className="absolute top-0 left-0 text-primaryBlue dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-500 text-lg p-2 transition-all duration-300"
+        className="absolute top-0 left-0 text-blue-300 hover:text-blue-500 text-lg p-2 transition-all duration-300"
         aria-label="Back to Bible Books"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,7 +234,7 @@ const BibleReader = () => {
         </svg>
       </button>
       {/* Icon key */}
-      <div className={`mb-6 mt-[40px] p-4 rounded-2xl shadow-xl border border-secondaryPurple ${modeClass}`}>
+      <div className={`mb-6 mt-[40px] p-4 rounded-2xl shadow-xl border border-gray-600 ${modeClass}`}>
         <h2 className={`text-lg font-bold mb-3 ${keyText}`}>Icon Key</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
@@ -347,58 +293,13 @@ const BibleReader = () => {
             disabled={!bookData}
             modeClass={modeClass}
           />
-          {/* Mode */}
-          <Selector
-            id="mode"
-            label="Mode"
-            value={mode}
-            onChange={(e) => {
-              const newMode = e.target.value;
-              setMode(newMode);
-              updateReaderSettings({ mode: newMode });
-            }}
-            options={[
-              { value: 'light', text: 'Light' },
-              { value: 'dark', text: 'Dark' },
-              { value: 'sepia', text: 'Sepia' },
-              { value: 'high-contrast', text: 'High Contrast' },
-            ]}
-            modeClass={modeClass}
-          />
-          {/* Font Size */}
-          <Selector
-            id="fontSize"
-            label="Font Size"
-            value={fontSize}
-            onChange={(e) => updateReaderSettings({ fontSize: e.target.value })}
-            options={[
-              { value: 'base', text: 'Base (16px)' },
-              { value: 'lg', text: 'Large (18px)' },
-              { value: 'xl', text: 'X-Large (20px)' },
-            ]}
-            modeClass={modeClass}
-          />
-          {/* Font Family */}
-          <Selector
-            id="fontFamily"
-            label="Font Style"
-            value={fontFamily}
-            onChange={(e) => updateReaderSettings({ fontFamily: e.target.value })}
-            options={[
-              { value: 'friendly', text: 'Friendly (Fredoka)' },
-              { value: 'serif', text: 'Serif (Times)' },
-              { value: 'sans', text: 'Sans-serif (Arial)' },
-            ]}
-            modeClass={modeClass}
-          />
           {/* Translation */}
           <Selector
             id="translation"
             label="Translation"
-            value={readerSettings?.version || 'NIV'}
+            value={currentTranslation || 'NIV'}
             onChange={(e) => {
               const v = e.target.value;
-              updateReaderSettings({ version: v });
               setCurrentTranslation(v);
             }}
             options={[
@@ -408,13 +309,13 @@ const BibleReader = () => {
             modeClass={modeClass}
           />
         </div>
-        <h1 className="text-3xl font-bold text-primaryBlue dark:text-white">
+        <h1 className="text-3xl font-bold text-white">
           {book} {selectedChapter}
         </h1>
       </div>
       {/* Error */}
       {error && (
-        <p className="text-center text-red-500 dark:text-red-300 mb-4">{error}</p>
+        <p className="text-center text-red-300 mb-4">{error}</p>
       )}
       {/* Verses */}
       {chapterData ? (
@@ -460,11 +361,7 @@ const BibleReader = () => {
                   onClick={() => setActiveVerse(activeVerse === v ? null : v)}
                   className={`${
                     highlight
-                      ? mode === 'dark' || mode === 'high-contrast'
-                        ? 'bg-yellow-300 text-black'
-                        : mode === 'sepia'
-                        ? 'bg-yellow-200 text-[#5F4B32]'
-                        : 'bg-yellow-300 text-black'
+                      ? 'bg-yellow-300 text-black'
                       : ''
                   } cursor-pointer select-text flex items-start`}
                 >
@@ -556,7 +453,7 @@ const BibleReader = () => {
           })}
         </div>
       ) : (
-        <p className="text-center text-textGray">Loading chapter...</p>
+        <p className="text-center text-gray-200">Loading chapter...</p>
       )}
       {/* Note modal */}
       {isNoteModalOpen && (
@@ -582,14 +479,14 @@ const BibleReader = () => {
         {Number(selectedChapter) > 1 && (
           <Link
             to={`/bible/${book}/${Number(selectedChapter) - 1}`}
-            className="text-primaryBlue dark:text-blue-300 hover:underline"
+            className="text-blue-300 hover:underline"
           >
             Previous Chapter
           </Link>
         )}
         <Link
           to={`/bible/${book}`}
-          className="text-primaryBlue dark:text-blue-300 hover:underline"
+          className="text-blue-300 hover:underline"
         >
           Back to Chapters
         </Link>
@@ -597,7 +494,7 @@ const BibleReader = () => {
           Number(selectedChapter) < Object.keys(bookData).length && (
             <Link
               to={`/bible/${book}/${Number(selectedChapter) + 1}`}
-              className="text-primaryBlue dark:text-blue-300 hover:underline"
+              className="text-blue-300 hover:underline"
             >
               Next Chapter
             </Link>
@@ -605,7 +502,7 @@ const BibleReader = () => {
       </div>
       <button
         onClick={() => markCompleted(book, Number(selectedChapter))}
-        className="mt-4 bg-primaryGreen text-white py-2 px-4 rounded-full hover:bg-green-600"
+        className="mt-4 bg-green-700 text-white py-2 px-4 rounded-full hover:bg-green-600"
       >
         Mark Complete
       </button>
@@ -615,7 +512,7 @@ const BibleReader = () => {
 
 const Selector = ({ id, label, value, onChange, options, disabled, modeClass }) => (
   <div className="flex flex-col">
-    <label htmlFor={id} className="text-sm font-medium text-primaryBlue dark:text-white mb-1">
+    <label htmlFor={id} className="text-sm font-medium text-white mb-1">
       {label}
     </label>
     <select
@@ -623,7 +520,7 @@ const Selector = ({ id, label, value, onChange, options, disabled, modeClass }) 
       value={value}
       onChange={onChange}
       disabled={disabled}
-      className={`p-2 rounded border border-gray-300 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+      className={`p-2 rounded border border-gray-600 ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
     >
       <option value="" disabled>
         Select {label}
@@ -671,7 +568,7 @@ const NoteModal = ({
 }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div className={`w-4/5 max-w-md p-6 rounded-3xl shadow-2xl ${modeClass}`}>
-      <h2 className="text-xl font-bold mb-4 text-primaryBlue dark:text-white">
+      <h2 className="text-xl font-bold mb-4 text-white">
         {heading}
       </h2>
       <textarea
@@ -679,20 +576,20 @@ const NoteModal = ({
         onChange={(e) => setNoteText(e.target.value)}
         placeholder="Enter your note..."
         rows="4"
-        className={`w-full p-2 border border-gray-300 rounded-lg ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
+        className={`w-full p-2 border border-gray-600 rounded-lg ${modeClass} focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200`}
       />
       <div className="flex justify-between gap-2 mt-4">
         <div className="flex gap-2">
           <button
             onClick={onClose}
-            className="py-2 px-4 rounded-full bg-gray-300 text-gray-800 hover:bg-gray-400"
+            className="py-2 px-4 rounded-full bg-gray-700 text-gray-200 hover:bg-gray-600"
             type="button"
           >
             Cancel
           </button>
           <button
             onClick={onSave}
-            className="py-2 px-4 rounded-full bg-primaryBlue text-white hover:bg-blue-700"
+            className="py-2 px-4 rounded-full bg-blue-700 text-white hover:bg-blue-500"
             type="button"
           >
             Save Note

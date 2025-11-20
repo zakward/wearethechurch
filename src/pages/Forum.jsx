@@ -1,4 +1,3 @@
-// src/pages/Forum.jsx
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../AuthContext.jsx';
@@ -6,9 +5,10 @@ import DbLoadingState from '../components/DbLoadingState.jsx';
 import { useDbLoading } from '../components/useDbLoading.jsx';
 
 const categories = ['General Discussion', 'Questions', 'Testimonies', 'Bible Study', 'Prayer Requests'];
+const reactions = ['👍', '👎', '😊', '❓'];
 
 const Forum = () => {
-  const { user, forumPosts, addForumPost, addComment, deleteForumPost, deleteComment } = useContext(AuthContext);
+  const { user, forumPosts, addForumPost, addComment, deleteForumPost, deleteComment, addReaction, removeReaction } = useContext(AuthContext);
   const navigate = useNavigate();
   const { isLoading, error, stopLoading, setLoadingError } = useDbLoading();
   
@@ -22,12 +22,9 @@ const Forum = () => {
   const [commentText, setCommentText] = useState({});
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
-  // Simulate loading forum posts with error handling
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        // Assuming fetchForumPosts is async in context
-        // If error, setLoadingError(err)
         if (forumPosts !== undefined) {
           stopLoading();
         }
@@ -73,6 +70,45 @@ const Forum = () => {
     }
     addComment(postId, commentText[postId]);
     setCommentText((prev) => ({ ...prev, [postId]: '' }));
+  };
+
+  const handleReaction = async (postId, commentIndex, emoji) => {
+    const post = forumPosts.find(p => p._id === postId);
+    if (!post) return;
+
+    const target = commentIndex !== null && commentIndex !== undefined 
+      ? post.comments[commentIndex] 
+      : post;
+    
+    const userReacted = target.reactions?.[emoji]?.some(
+      r => r.userId.toString() === user._id.toString()
+    ) || false;
+
+    try {
+      if (userReacted) {
+        await removeReaction(postId, commentIndex, emoji);
+      } else {
+        await addReaction(postId, commentIndex, emoji);
+      }
+    } catch (err) {
+      console.error('Error handling reaction:', err);
+    }
+  };
+
+  const getReactionCount = (target, emoji) => {
+    return target?.reactions?.[emoji]?.length || 0;
+  };
+
+  const userHasReacted = (target, emoji) => {
+    if (!target?.reactions?.[emoji]) return false;
+    return target.reactions[emoji].some(
+      r => r.userId.toString() === user._id.toString()
+    );
+  };
+
+  const getReactionUsers = (target, emoji) => {
+    if (!target?.reactions?.[emoji]) return '';
+    return target.reactions[emoji].map(r => r.userName).join(', ');
   };
 
   const filteredPosts = forumPosts
@@ -217,10 +253,37 @@ const Forum = () => {
                 <p className="text-textGray text-sm mt-1">
                   Posted by <span className="font-semibold">{post.userName}</span> on {new Date(post.createdAt).toLocaleString()}
                 </p>
+                
+                {/* Reactions for Post */}
+                <div className="flex gap-4 mt-3">
+                  {reactions.map((emoji) => {
+                    const count = getReactionCount(post, emoji);
+                    const hasReacted = userHasReacted(post, emoji);
+                    const users = getReactionUsers(post, emoji);
+                    
+                    return (
+                      <button
+                        key={emoji}
+                        onClick={() => handleReaction(post._id, null, emoji)}
+                        className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all duration-200 cursor-pointer ${
+                          hasReacted 
+                            ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' 
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                        aria-label={`React with ${emoji}`}
+                        title={users || 'No reactions yet'}
+                      >
+                        <span className="text-lg">{emoji}</span>
+                        {count > 0 && <span className="text-sm font-medium">{count}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                
                 {post.userEmail === user.email && (
                   <button
                     onClick={() => deleteForumPost(post._id)}
-                    className="mt-2 bg-red-500 text-white py-1 px-3 rounded-full hover:bg-red-600 transition-all duration-300"
+                    className="mt-3 bg-red-500 text-white py-1 px-3 rounded-full hover:bg-red-600 transition-all duration-300"
                     aria-label={`Delete post titled ${post.title}`}
                   >
                     Delete Post
@@ -231,23 +294,51 @@ const Forum = () => {
                 <div className="mt-4">
                   <button
                     onClick={() => toggleExpandPost(post._id)}
-                    className="text-blue-500 hover:underline"
+                    className="text-blue-500 hover:underline font-medium"
                     aria-label={expandedPosts[post._id] ? `Hide comments for ${post.title}` : `View comments for ${post.title}`}
                   >
                     {expandedPosts[post._id] ? 'Hide Comments' : `View Comments (${post.comments.length})`}
                   </button>
+                  
                   {expandedPosts[post._id] && (
-                    <div className="mt-2 space-y-2">
+                    <div className="mt-3 space-y-3">
                       {post.comments.map((comment, index) => (
-                        <div key={index} className="bg-gray-100 p-3 rounded-lg">
-                          <p className="text-textGray">{comment.text}</p>
-                          <p className="text-textGray text-sm">
+                        <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <p className="text-textGray mb-1">{comment.text}</p>
+                          <p className="text-textGray text-xs mb-2">
                             By <span className="font-semibold">{comment.userName}</span> on {new Date(comment.timestamp).toLocaleString()}
                           </p>
+                          
+                          {/* Reactions for Comment */}
+                          <div className="flex gap-3 mt-2">
+                            {reactions.map((emoji) => {
+                              const count = getReactionCount(comment, emoji);
+                              const hasReacted = userHasReacted(comment, emoji);
+                              const users = getReactionUsers(comment, emoji);
+                              
+                              return (
+                                <button
+                                  key={emoji}
+                                  onClick={() => handleReaction(post._id, index, emoji)}
+                                  className={`flex items-center gap-1 px-2 py-1 rounded transition-all duration-200 cursor-pointer text-sm ${
+                                    hasReacted 
+                                      ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' 
+                                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                  }`}
+                                  aria-label={`React with ${emoji} on comment`}
+                                  title={users || 'No reactions yet'}
+                                >
+                                  <span>{emoji}</span>
+                                  {count > 0 && <span className="text-xs font-medium">{count}</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          
                           {comment.userEmail === user.email && (
                             <button
                               onClick={() => deleteComment(post._id, index)}
-                              className="mt-1 text-red-500 hover:underline text-sm"
+                              className="mt-2 text-red-500 hover:text-red-700 text-sm font-medium"
                               aria-label="Delete comment"
                             >
                               Delete Comment
@@ -255,21 +346,25 @@ const Forum = () => {
                           )}
                         </div>
                       ))}
-                      <textarea
-                        value={commentText[post._id] || ''}
-                        onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
-                        placeholder="Add a comment..."
-                        className="w-full p-2 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-                        rows="2"
-                        aria-label="Add a comment to post"
-                      />
-                      <button
-                        onClick={() => handleAddComment(post._id)}
-                        className="mt-2 bg-primaryBlue text-white py-1 px-3 rounded-full hover:bg-blue-700 transition-all duration-300"
-                        aria-label="Submit comment"
-                      >
-                        Add Comment
-                      </button>
+                      
+                      {/* Add Comment Input */}
+                      <div className="mt-3">
+                        <textarea
+                          value={commentText[post._id] || ''}
+                          onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
+                          placeholder="Add a comment..."
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                          rows="2"
+                          aria-label="Add a comment to post"
+                        />
+                        <button
+                          onClick={() => handleAddComment(post._id)}
+                          className="mt-2 bg-primaryBlue text-white py-2 px-4 rounded-full hover:bg-blue-700 transition-all duration-300"
+                          aria-label="Submit comment"
+                        >
+                          Add Comment
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

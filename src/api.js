@@ -53,6 +53,8 @@ export const deleteForumPost = (postId) => apiRequest(`/forum/${postId}`, 'DELET
 export const addComment = (postId, text) => apiRequest(`/forum/${postId}/comment`, 'POST', { text });
 export const updateComment = (postId, commentIndex, text) => apiRequest(`/forum/${postId}/comment/${commentIndex}`, 'PUT', { text });
 export const deleteComment = (postId, commentIndex) => apiRequest(`/forum/${postId}/comment/${commentIndex}`, 'DELETE');
+export const addReaction = (postId, commentIndex, reactionType) => apiRequest(`/forum/${postId}/reaction`, 'POST', { commentIndex, reactionType });
+export const removeReaction = (postId, commentIndex, reactionType) => apiRequest(`/forum/${postId}/reaction/remove`, 'POST', { commentIndex, reactionType });
 
 // Wrapper function for requests (keeps your existing API calls compatible)
 const apiRequest = async (endpoint, method = 'GET', data = null) => {

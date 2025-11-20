@@ -100,25 +100,11 @@ const Nav = () => {
                 )}
               </div>
               <Link
-                to="/persons"
-                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/persons')} transition-all duration-300 hover:scale-105`}
-                aria-label="People"
-              >
-                People
-              </Link>
-              <Link
                 to="/insights"
                 className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/insights')} transition-all duration-300 hover:scale-105`}
                 aria-label="Insights"
               >
                 Insights
-              </Link>
-              <Link
-                to="/terminology"
-                className={`py-2 px-3 rounded-full text-sm font-semibold text-white bg-blue-800 ${isActive('/terminology')} transition-all duration-300 hover:scale-105`}
-                aria-label="Terms"
-              >
-               Glossary
               </Link>
               <Link
                 to="/forum"
@@ -228,28 +214,12 @@ const Nav = () => {
                     Bookmarks {user?.unreadBookmarksCount > 0 && `(${user.unreadBookmarksCount})`}
                   </Link>
                   <Link
-                    to="/persons"
-                    onClick={() => setIsModalOpen(false)}
-                    className={`py-2 px-4 text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/persons')}`}
-                    aria-label="People"
-                  >
-                    People
-                  </Link>
-                  <Link
                     to="/insights"
                     onClick={() => setIsModalOpen(false)}
                     className={`py-2 px-4 text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/insights')}`}
                     aria-label="Insights"
                   >
                     Insights
-                  </Link>
-                  <Link
-                    to="/terminology"
-                    onClick={() => setIsModalOpen(false)}
-                    className={`py-2 px-4 text-primaryBlue font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 ${isActive('/terminology')}`}
-                    aria-label="Terms"
-                  >
-                   Glossary
                   </Link>
                   <Link
                     to="/forum"
